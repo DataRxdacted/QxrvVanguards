@@ -1,0 +1,9 @@
+node_modules/
+dist/
+out/
+*.log
+.env
+.env.*
+
+# Local planning notes. Kept on disk for continuity, but not committed.
+PROJECT_NOTES.md

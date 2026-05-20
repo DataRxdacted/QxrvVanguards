@@ -1,0 +1,38 @@
+{
+  "name": "openavauto",
+  "version": "0.1.0",
+  "description": "A vision-driven desktop macro studio for Roblox tower defense strategies.",
+  "main": "src/main/main.js",
+  "private": true,
+  "scripts": {
+    "start": "set ELECTRON_RUN_AS_NODE=& electron .",
+    "dev": "set ELECTRON_RUN_AS_NODE=& electron .",
+    "build": "electron-builder"
+  },
+  "keywords": [
+    "desktop",
+    "vision",
+    "automation",
+    "strategy"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^32.3.3",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "dev.openavauto.app",
+    "productName": "OpenAVAuto",
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "nsis"
+    }
+  }
+}

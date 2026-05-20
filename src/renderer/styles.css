@@ -1,0 +1,460 @@
+:root {
+  color-scheme: dark;
+  --bg: #070a10;
+  --frame: #0b0f17;
+  --panel: #10151f;
+  --panel-soft: #151b26;
+  --panel-strong: #1b2330;
+  --text: #f2f4f7;
+  --muted: #9aa3b2;
+  --line: rgba(255, 255, 255, 0.12);
+  --accent: #d7dce5;
+  --danger: #d65a67;
+  --warning: #8c846f;
+  --radius: 8px;
+  --slot-height: min(600px, calc(100vh - 104px));
+  --slot-width: min(800px, calc(var(--slot-height) * 1.3333));
+  --rail-width: 286px;
+  --grid-gap: 14px;
+  --console-width: calc(var(--slot-width) + (var(--rail-width) * 2) + (var(--grid-gap) * 2));
+  --font: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: transparent;
+}
+
+body {
+  margin: 0;
+  min-width: 1120px;
+  min-height: 690px;
+  overflow: hidden;
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font);
+}
+
+.smoke-background {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  -webkit-mask:
+    linear-gradient(#000 0 0) top / 100% var(--hole-top, 0px) no-repeat,
+    linear-gradient(#000 0 0) left var(--hole-top, 0px) / var(--hole-left, 0px) var(--hole-height, 0px) no-repeat,
+    linear-gradient(#000 0 0) right var(--hole-top, 0px) / calc(100% - var(--hole-left, 0px) - var(--hole-width, 0px)) var(--hole-height, 0px) no-repeat,
+    linear-gradient(#000 0 0) bottom / 100% calc(100% - var(--hole-top, 0px) - var(--hole-height, 0px)) no-repeat;
+  mask:
+    linear-gradient(#000 0 0) top / 100% var(--hole-top, 0px) no-repeat,
+    linear-gradient(#000 0 0) left var(--hole-top, 0px) / var(--hole-left, 0px) var(--hole-height, 0px) no-repeat,
+    linear-gradient(#000 0 0) right var(--hole-top, 0px) / calc(100% - var(--hole-left, 0px) - var(--hole-width, 0px)) var(--hole-height, 0px) no-repeat,
+    linear-gradient(#000 0 0) bottom / 100% calc(100% - var(--hole-top, 0px) - var(--hole-height, 0px)) no-repeat;
+}
+
+button,
+select,
+input {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.app-frame {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-rows: auto auto;
+  justify-items: center;
+  width: 100vw;
+  height: 100vh;
+  gap: 10px;
+  padding: 14px;
+}
+
+.titlebar {
+  -webkit-app-region: drag;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  width: min(100%, var(--console-width));
+  min-height: 56px;
+  padding: 10px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--frame);
+}
+
+.titlebar button,
+.operator-grid button,
+select,
+input {
+  -webkit-app-region: no-drag;
+}
+
+.eyebrow {
+  margin: 0 0 4px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 850;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+h1,
+h2,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  margin-bottom: 0;
+  font-size: 1rem;
+  line-height: 1.1;
+}
+
+h2 {
+  margin: 0 0 8px;
+  color: var(--text);
+  font-size: 0.94rem;
+  font-weight: 850;
+}
+
+.titlebar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.window-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.window-controls button {
+  display: grid;
+  width: 34px;
+  height: 30px;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.window-controls button:hover {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+}
+
+.window-controls button[data-window-close]:hover {
+  background: rgba(214, 90, 103, 0.28);
+  color: #fff;
+}
+
+.operator-grid {
+  display: grid;
+  width: min(100%, var(--console-width));
+  grid-template-columns:
+    minmax(240px, var(--rail-width))
+    var(--slot-width)
+    minmax(240px, var(--rail-width));
+  justify-content: center;
+  align-items: start;
+  gap: var(--grid-gap);
+  height: var(--slot-height);
+  min-width: 0;
+}
+
+.left-rail,
+.right-rail,
+.center-stage {
+  min-width: 0;
+  min-height: 0;
+}
+
+.left-rail,
+.right-rail {
+  display: grid;
+  height: var(--slot-height);
+  gap: 10px;
+  align-content: stretch;
+  overflow: hidden;
+  padding: 1px;
+}
+
+.left-rail {
+  grid-template-rows: auto auto auto minmax(0, 1fr);
+}
+
+.right-rail {
+  grid-template-rows: auto auto;
+}
+
+.panel,
+.fieldset-panel {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--frame);
+}
+
+.panel,
+.fieldset-panel {
+  padding: 11px;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.stack {
+  display: grid;
+  gap: 7px;
+}
+
+label {
+  display: grid;
+  gap: 4px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+select,
+input {
+  width: 100%;
+  min-width: 0;
+  min-height: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  background: #f6f8fb;
+  color: #070a10;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.stat-row {
+  display: flex;
+  align-items: center;
+}
+
+.stat-row {
+  justify-content: space-between;
+  min-height: 27px;
+  color: var(--muted);
+}
+
+.stat-row strong {
+  color: var(--text);
+}
+
+.log-panel {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.log-feed {
+  min-height: 0;
+  overflow: hidden;
+  color: var(--text);
+  font-size: 0.85rem;
+  font-weight: 760;
+}
+
+.log-feed p {
+  margin-bottom: 12px;
+}
+
+.center-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: var(--slot-height);
+}
+
+.roblox-slot {
+  position: relative;
+  display: grid;
+  width: var(--slot-width);
+  height: var(--slot-height);
+  max-width: 800px;
+  max-height: 600px;
+  aspect-ratio: 4 / 3;
+  flex: 0 1 auto;
+  place-items: start end;
+  overflow: hidden;
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius);
+  background: transparent;
+}
+
+.primary-button,
+.secondary-button,
+.ghost-button,
+.danger-button,
+.menu-list button,
+.hotkey-list button {
+  min-height: 32px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0 12px;
+  font-size: 0.88rem;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.primary-button {
+  border-color: transparent;
+  background: var(--accent);
+  color: #061014;
+}
+
+.secondary-button {
+  background: #f7f8fb;
+  color: #070a10;
+}
+
+.ghost-button {
+  background: var(--panel-soft);
+  color: var(--text);
+}
+
+.danger-button {
+  border-color: rgba(255, 82, 104, 0.5);
+  background: rgba(255, 82, 104, 0.18);
+  color: #ffdce1;
+}
+
+.hotkey-list,
+.menu-list {
+  display: grid;
+  gap: 5px;
+}
+
+.hotkey-list button {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text);
+  text-align: left;
+}
+
+kbd {
+  display: grid;
+  min-height: 22px;
+  place-items: center;
+  border-radius: 5px;
+  background: #f7f8fb;
+  color: #070a10;
+  font-family: inherit;
+  font-weight: 900;
+}
+
+.hotkey-list span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.menu-list button {
+  width: 100%;
+  min-height: 30px;
+  background: #f7f8fb;
+  color: #070a10;
+}
+
+.menu-list button.active {
+  outline: 1px solid rgba(255, 255, 255, 0.7);
+  outline-offset: 1px;
+}
+
+@media (max-width: 1280px), (max-height: 760px) {
+  :root {
+    --slot-height: min(600px, calc(100vh - 88px));
+    --rail-width: 250px;
+    --grid-gap: 10px;
+  }
+
+  .app-frame {
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .titlebar {
+    min-height: 54px;
+    padding-left: 14px;
+  }
+
+  .operator-grid {
+    grid-template-columns:
+      minmax(210px, var(--rail-width))
+      var(--slot-width)
+      minmax(210px, var(--rail-width));
+  }
+
+  .left-rail,
+  .right-rail,
+  .center-stage {
+    gap: 8px;
+  }
+
+  .panel,
+  .fieldset-panel {
+    padding: 10px;
+  }
+
+  .left-rail {
+    grid-template-rows: auto auto auto minmax(0, 1fr);
+  }
+
+  .hotkey-list {
+    gap: 5px;
+  }
+
+  .hotkey-list button,
+  .menu-list button,
+  .primary-button,
+  .secondary-button,
+  .ghost-button {
+    min-height: 31px;
+    font-size: 0.82rem;
+  }
+}
+
+@media (max-width: 1120px) {
+  body {
+    overflow: auto;
+  }
+
+  .app-frame {
+    min-height: 100vh;
+    height: auto;
+  }
+
+  .operator-grid {
+    grid-template-columns: minmax(220px, 280px) minmax(520px, 1fr);
+  }
+
+  .right-rail {
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

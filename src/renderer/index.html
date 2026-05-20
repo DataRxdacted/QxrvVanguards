@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OpenAVAuto</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <canvas class="smoke-background" aria-hidden="true"></canvas>
+    <main class="app-frame">
+      <header class="titlebar">
+        <div>
+          <p class="eyebrow">OpenAVAuto <span data-app-version></span></p>
+          <h1>Vision Macro Studio</h1>
+        </div>
+        <div class="titlebar-right">
+          <div class="window-controls" aria-label="Window controls">
+            <button type="button" data-window-minimize aria-label="Minimize">-</button>
+            <button type="button" data-window-maximize aria-label="Maximize">□</button>
+            <button type="button" data-window-close aria-label="Close">×</button>
+          </div>
+        </div>
+      </header>
+
+      <section class="operator-grid" aria-label="Automation console">
+        <aside class="left-rail">
+          <section class="fieldset-panel">
+            <h2>Update</h2>
+            <div class="stack">
+              <button class="secondary-button" type="button">Check Version</button>
+              <button class="secondary-button" type="button">Change Logs</button>
+            </div>
+          </section>
+
+          <section class="fieldset-panel">
+            <h2>Map</h2>
+            <div class="stack">
+              <label>
+                Mode
+                <select>
+                  <option>Story</option>
+                  <option>Challenge</option>
+                  <option>Raid</option>
+                </select>
+              </label>
+              <label>
+                Map
+                <select>
+                  <option>Planet Namek</option>
+                  <option>All</option>
+                </select>
+              </label>
+              <label>
+                Act
+                <select>
+                  <option>Act 1</option>
+                  <option>Act 2</option>
+                  <option>Act 3</option>
+                </select>
+              </label>
+            </div>
+          </section>
+
+          <section class="fieldset-panel reward-panel">
+            <h2>Run State</h2>
+            <div class="stat-row">
+              <span>Match</span>
+              <strong>0/0</strong>
+            </div>
+            <div class="stat-row">
+              <span>Wave</span>
+              <strong>-- / --</strong>
+            </div>
+            <div class="stat-row">
+              <span>Confidence</span>
+              <strong>0%</strong>
+            </div>
+          </section>
+
+          <section class="fieldset-panel log-panel">
+            <h2>Logs</h2>
+            <div class="log-feed">
+              <p>Open Mango</p>
+              <p class="muted">Waiting for Roblox window...</p>
+            </div>
+          </section>
+        </aside>
+
+        <section class="center-stage">
+          <div class="roblox-slot" aria-label="800 by 600 Roblox window gap"></div>
+        </section>
+
+        <aside class="right-rail">
+          <section class="fieldset-panel">
+            <h2>Hotkey</h2>
+            <div class="hotkey-list">
+              <button type="button"><kbd>F1</kbd><span>Align Roblox</span></button>
+              <button type="button"><kbd>F2</kbd><span>Start Macro</span></button>
+              <button type="button"><kbd>F3</kbd><span>Stop Macro</span></button>
+              <button type="button"><kbd>F4</kbd><span>Test Detector</span></button>
+              <button type="button"><kbd>F5</kbd><span>Start Private Server</span></button>
+              <button type="button"><kbd>F6</kbd><span>Pause / Resume</span></button>
+              <button type="button"><kbd>F7</kbd><span>Start Discord Bot</span></button>
+            </div>
+          </section>
+
+          <section class="fieldset-panel">
+            <h2>Options</h2>
+            <nav class="menu-list" aria-label="Configuration sections">
+              <button class="active" type="button">Main</button>
+              <button type="button">Config</button>
+              <button type="button">Tasks</button>
+              <button type="button">Detector</button>
+              <button type="button">Support</button>
+              <button type="button">Credits</button>
+            </nav>
+          </section>
+        </aside>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
