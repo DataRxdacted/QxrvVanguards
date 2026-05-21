@@ -1,0 +1,48 @@
+{
+  "coordinate": {
+    "mode": "default",
+    "map": "Planet Namak",
+    "activeSlot": "Slot 1",
+    "maps": {
+      "default:planetnamak": {
+        "mode": "default",
+        "map": "Planet Namak",
+        "slots": {
+          "Slot 1": {
+            "Unit 1": {
+              "x": 322,
+              "y": 317
+            }
+          }
+        }
+      }
+    }
+  },
+  "strategy": {
+    "mode": "story",
+    "map": "All Story Maps",
+    "page": "Page 1",
+    "actions": [
+      {
+        "type": "Place",
+        "slot": "Slot 1",
+        "unit": "Unit 1",
+        "upgrade": "0",
+        "priority": "None",
+        "wave": 0,
+        "money": 0,
+        "delay": 0
+      },
+      {
+        "type": "Place",
+        "slot": "Slot 1",
+        "unit": "Unit 1",
+        "upgrade": "0",
+        "priority": "None",
+        "wave": 0,
+        "money": 0,
+        "delay": 0
+      }
+    ]
+  }
+}

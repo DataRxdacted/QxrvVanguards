@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OpenAVAuto Configs</title>
+    <link rel="stylesheet" href="config.css" />
+  </head>
+  <body>
+    <canvas class="smoke-background" aria-hidden="true"></canvas>
+    <main class="config-shell">
+      <header class="config-header">
+        <div>
+          <p class="eyebrow">OpenAVAuto <span data-app-version></span></p>
+          <h1>Vision Macro Studio</h1>
+        </div>
+        <div class="window-controls" aria-label="Window controls">
+          <button type="button" data-window-minimize aria-label="Minimize">-</button>
+          <button type="button" data-window-maximize aria-label="Maximize">[]</button>
+          <button type="button" data-window-close aria-label="Close">x</button>
+        </div>
+      </header>
+
+      <nav class="tab-bar" aria-label="Configuration tabs">
+        <button class="active" type="button" data-tab-button="coordinate">Coordinate</button>
+        <button type="button" data-tab-button="strategy">Strategy</button>
+        <button type="button" data-tab-button="transfer">Import / Export</button>
+      </nav>
+
+      <section class="tab-panel active" data-tab-panel="coordinate">
+        <aside class="side-panel coordinate-units">
+          <label>
+            Active Slot
+            <select data-active-slot></select>
+          </label>
+          <div class="unit-stack" data-coordinate-units></div>
+          <div class="button-row">
+            <button class="ghost-button" type="button" data-reset-all-coordinates>Reset All</button>
+            <button class="ghost-button" type="button" data-reset-slot-coordinates>Reset Slot</button>
+          </div>
+        </aside>
+
+        <section class="map-workbench">
+          <div class="map-canvas">
+            <img alt="" data-map-preview />
+            <div class="marker-layer" data-marker-layer></div>
+            <div class="map-empty" data-map-empty>
+              <strong>No image for selected map</strong>
+              <span>The selected mode/map does not have a matching file in data/map yet.</span>
+            </div>
+          </div>
+        </section>
+
+        <aside class="side-panel coordinate-settings">
+          <label>
+            Game Mode
+            <select data-config-mode-select></select>
+          </label>
+          <label>
+            Map
+            <select data-config-map-select></select>
+          </label>
+          <label>
+            Nuke Timer (s)
+            <input type="number" value="300" min="0" />
+          </label>
+          <button class="secondary-button" type="button">Change Image</button>
+          <button class="danger-button" type="button">Delete File</button>
+        </aside>
+      </section>
+
+      <section class="tab-panel strategy-panel" data-tab-panel="strategy">
+        <aside class="side-panel action-list-panel">
+          <div class="panel-title">
+            <h2>Actions</h2>
+            <button class="secondary-button" type="button" data-add-action>Add</button>
+          </div>
+          <div class="action-list" data-action-list></div>
+        </aside>
+
+        <section class="action-editor">
+          <div class="editor-header">
+            <div>
+              <p class="eyebrow">Selected Action</p>
+              <h2 data-selected-action-title>Action 1</h2>
+            </div>
+            <label class="inline-toggle">
+              <input type="checkbox" checked />
+              Enabled
+            </label>
+          </div>
+
+          <div class="form-grid">
+            <label>
+              Action
+              <select data-action-field="type">
+                <option>Place</option>
+                <option>Upgrade</option>
+                <option>Special Ability</option>
+                <option>Restart</option>
+                <option>Ability 1</option>
+                <option>Ability 2</option>
+                <option>VSJW 1</option>
+                <option>VSJW 2</option>
+                <option>VSJW 3</option>
+                <option>Swap</option>
+                <option>Sell</option>
+                <option>Pink Villian Boss Phase</option>
+                <option>Pink Villian Bomb Phase</option>
+                <option>None</option>
+              </select>
+            </label>
+            <label>
+              Slot
+              <select data-action-field="slot">
+                <option>Slot 1</option>
+                <option>Slot 2</option>
+                <option>Slot 3</option>
+                <option>Slot 4</option>
+                <option>Slot 5</option>
+                <option>Slot 6</option>
+              </select>
+            </label>
+            <label>
+              Unit
+              <select data-action-field="unit">
+                <option>Unit 1</option>
+                <option>Unit 2</option>
+                <option>Unit 3</option>
+                <option>Unit 4</option>
+                <option>Unit 5</option>
+                <option>Unit 6</option>
+              </select>
+            </label>
+            <label>
+              Upgrade
+              <select data-action-field="upgrade">
+                <option>0</option>
+                <option>1</option>
+                <option>2</option>
+                <option>3</option>
+                <option>4</option>
+                <option>Max</option>
+              </select>
+            </label>
+            <label>
+              Priority
+              <select data-action-field="priority">
+                <option>None</option>
+                <option>Same</option>
+                <option>Bosses</option>
+                <option>Closest</option>
+                <option>First</option>
+                <option>Last</option>
+                <option>Strongest</option>
+                <option>Weakest</option>
+              </select>
+            </label>
+            <label>
+              Wave
+              <input type="number" value="0" min="0" data-action-field="wave" />
+            </label>
+            <label>
+              Money At Least
+              <input type="number" value="0" min="0" data-action-field="money" />
+            </label>
+            <label>
+              Delay (ms)
+              <input type="number" value="0" min="0" data-action-field="delay" />
+            </label>
+          </div>
+
+          <div class="condition-strip">
+            <label class="inline-toggle">
+              <input type="checkbox" checked />
+              Verify placement
+            </label>
+            <label class="inline-toggle">
+              <input type="checkbox" />
+              Pause on unknown state
+            </label>
+            <label class="inline-toggle">
+              <input type="checkbox" />
+              Repeat until success
+            </label>
+          </div>
+        </section>
+
+        <aside class="side-panel strategy-meta">
+          <label>
+            Game Mode
+            <select data-strategy-mode-select></select>
+          </label>
+          <label>
+            Map
+            <select data-strategy-map-select></select>
+          </label>
+          <label>
+            Page
+            <select>
+              <option>Page 1</option>
+              <option>Page 2</option>
+              <option>Page 3</option>
+            </select>
+          </label>
+          <button class="ghost-button" type="button">Duplicate Action</button>
+          <button class="ghost-button" type="button">Reset Action</button>
+          <button class="danger-button" type="button" data-delete-action>Delete Action</button>
+          <button class="danger-button" type="button">Delete Strategy</button>
+          <button class="primary-button push-bottom" type="button">Save Strategy</button>
+        </aside>
+      </section>
+
+      <section class="tab-panel transfer-panel" data-tab-panel="transfer">
+        <section class="transfer-column">
+          <p class="eyebrow">Strategy</p>
+          <h2>Import / Export Strategy</h2>
+          <div class="transfer-actions">
+            <button class="secondary-button" type="button">Import Strategy</button>
+            <button class="secondary-button" type="button">Export Strategy</button>
+          </div>
+        </section>
+        <section class="transfer-column">
+          <p class="eyebrow">Coordinate</p>
+          <h2>Import / Export Coordinates</h2>
+          <div class="transfer-actions">
+            <button class="secondary-button" type="button">Import Coordinates</button>
+            <button class="secondary-button" type="button">Export Coordinates</button>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="config.js"></script>
+  </body>
+</html>

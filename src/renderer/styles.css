@@ -104,7 +104,7 @@ input {
   margin: 0 0 4px;
   color: var(--muted);
   font-size: 0.72rem;
-  font-weight: 850;
+  font-weight: 720;
   letter-spacing: 0;
   text-transform: uppercase;
 }
@@ -118,6 +118,7 @@ p {
 h1 {
   margin-bottom: 0;
   font-size: 1rem;
+  font-weight: 720;
   line-height: 1.1;
 }
 
@@ -125,7 +126,7 @@ h2 {
   margin: 0 0 8px;
   color: var(--text);
   font-size: 0.94rem;
-  font-weight: 850;
+  font-weight: 720;
 }
 
 .titlebar-right {
@@ -225,12 +226,16 @@ h2 {
   gap: 7px;
 }
 
+.is-hidden {
+  display: none;
+}
+
 label {
   display: grid;
   gap: 4px;
   color: var(--muted);
   font-size: 0.72rem;
-  font-weight: 850;
+  font-weight: 720;
   text-transform: uppercase;
 }
 
@@ -244,7 +249,7 @@ input {
   background: #f6f8fb;
   color: #070a10;
   font-size: 0.82rem;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .stat-row {
@@ -256,10 +261,12 @@ input {
   justify-content: space-between;
   min-height: 27px;
   color: var(--muted);
+  font-weight: 560;
 }
 
 .stat-row strong {
   color: var(--text);
+  font-weight: 720;
 }
 
 .log-panel {
@@ -269,10 +276,10 @@ input {
 
 .log-feed {
   min-height: 0;
-  overflow: hidden;
+  overflow-y: auto;
   color: var(--text);
   font-size: 0.85rem;
-  font-weight: 760;
+  font-weight: 620;
 }
 
 .log-feed p {
@@ -298,7 +305,7 @@ input {
   place-items: start end;
   overflow: hidden;
   border: 1px dashed rgba(255, 255, 255, 0.2);
-  border-radius: var(--radius);
+  border-radius: 0;
   background: transparent;
 }
 
@@ -313,7 +320,7 @@ input {
   border-radius: 6px;
   padding: 0 12px;
   font-size: 0.88rem;
-  font-weight: 850;
+  font-weight: 720;
   white-space: nowrap;
 }
 
@@ -364,13 +371,15 @@ kbd {
   background: #f7f8fb;
   color: #070a10;
   font-family: inherit;
-  font-weight: 900;
+  font-weight: 720;
 }
 
 .hotkey-list span {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: #d8dee8;
+  font-weight: 650;
   white-space: nowrap;
 }
 

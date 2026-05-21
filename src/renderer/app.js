@@ -4,9 +4,146 @@ const menuButtons = document.querySelectorAll(".menu-list button");
 const versionBadge = document.querySelector("[data-app-version]");
 const smokeCanvas = document.querySelector(".smoke-background");
 const robloxSlot = document.querySelector(".roblox-slot");
+const logFeed = document.querySelector("[data-log-feed]");
 const minimizeButton = document.querySelector("[data-window-minimize]");
 const maximizeButton = document.querySelector("[data-window-maximize]");
 const closeButton = document.querySelector("[data-window-close]");
+const alignRobloxButton = document.querySelector("[data-align-roblox]");
+const startMacroButton = document.querySelector("[data-start-macro]");
+const openConfigButton = document.querySelector("[data-open-config]");
+const modeSelect = document.querySelector("[data-mode-select]");
+const mapSelect = document.querySelector("[data-map-select]");
+const actSelect = document.querySelector("[data-act-select]");
+const mapField = document.querySelector("[data-map-field]");
+const actField = document.querySelector("[data-act-field]");
+
+const appendLog = (message, muted = false) => {
+  if (!logFeed) return;
+  const entry = document.createElement("p");
+  entry.textContent = message;
+  entry.classList.toggle("muted", muted);
+  logFeed.append(entry);
+  while (logFeed.children.length > 80) {
+    logFeed.firstElementChild?.remove();
+  }
+  logFeed.scrollTop = logFeed.scrollHeight;
+};
+
+const gameModes = [
+  {
+    id: "spring-event",
+    label: "Spring Event",
+    selector: "fixed",
+    fixedMap: "Eternal Tyrant",
+    acts: ["Default"],
+    source: "https://wiki.vanguards.gg/Eternal_Tyrant_Gamemode"
+  },
+  {
+    id: "story",
+    label: "Story",
+    selector: "map",
+    acts: ["Act 1", "Act 2", "Act 3", "Act 4", "Act 5", "Act 6"],
+    maps: [
+      "Planet Namak",
+      "Sand Village",
+      "Double Dungeon",
+      "Shibuya Station",
+      "Underground Church",
+      "Spirit Society",
+      "Martial Island",
+      "Edge of Heaven",
+      "Lebereo Raid",
+      "Hill of Swords",
+      "Frozen Port",
+      "Downtown Tokyo",
+      "Hidden Village"
+    ],
+    source: "https://wiki.vanguards.gg/Story"
+  },
+  {
+    id: "legend",
+    label: "Legend Stages",
+    selector: "map",
+    acts: ["Stage 1", "Stage 2", "Stage 3", "EX"],
+    maps: [
+      "Sand Village",
+      "Double Dungeon",
+      "Shibuya Aftermath",
+      "Golden Castle",
+      "Kuinshi Palace",
+      "Land of the Gods",
+      "Shining Castle",
+      "Crystal Chapel",
+      "Burning Spirit Tree",
+      "Imprisoned Island",
+      "Tokyo Railway",
+      "Destroyed Hidden Village"
+    ],
+    source: "https://wiki.vanguards.gg/Legend_Stages"
+  },
+  {
+    id: "infinite",
+    label: "Infinite Mode",
+    selector: "map",
+    acts: ["Infinite"],
+    maps: [
+      "Planet Namak",
+      "Sand Village",
+      "Double Dungeon",
+      "Shibuya Station",
+      "Underground Church",
+      "Spirit Society",
+      "Martial Island",
+      "Edge of Heaven",
+      "Lebereo Raid",
+      "Hill of Swords",
+      "Frozen Port",
+      "Downtown Tokyo",
+      "Hidden Village"
+    ],
+    source: "https://wiki.vanguards.gg/Infinite_Mode"
+  },
+  {
+    id: "challenges",
+    label: "Challenges",
+    selector: "rotating",
+    fixedMap: "Rotating Story / Legend stage",
+    acts: ["Current Rotation"],
+    source: "https://wiki.vanguards.gg/Challenges"
+  },
+  {
+    id: "raids",
+    label: "Raids",
+    selector: "map",
+    acts: ["Default"],
+    maps: ["Tracks at the Edge of the World", "Ruined City", "HAPPY Factory"],
+    source: "https://wiki.vanguards.gg/Raids"
+  },
+  {
+    id: "boss-events",
+    label: "Boss Events",
+    selector: "boss",
+    acts: ["Default"],
+    maps: ["Igros", "The Blood-Red Commander", "Sukono", "King of Curses", "Dark-Tainted Tyrant", "Saber (Alternate)", "The Founder", "Arin"],
+    source: "https://wiki.vanguards.gg/Boss_Events"
+  },
+  {
+    id: "world-destroyer",
+    label: "World Destroyer",
+    selector: "fixed",
+    fixedMap: "Frozen Port",
+    acts: ["Default"],
+    source: "https://wiki.vanguards.gg/World_Destroyer_Gamemode"
+  },
+  {
+    id: "portals",
+    label: "Portals",
+    selector: "portal",
+    acts: ["Tier 1-10"],
+    maps: ["Boo Portal", "Lfelt Portal"],
+    source: "https://wiki.vanguards.gg/Portals"
+  }
+];
 
 const smokeFragmentShader = `#version 300 es
 precision highp float;
@@ -130,12 +267,19 @@ if (smokeCanvas) {
     smokeCanvas.style.setProperty("--hole-top", `${rect.top}px`);
     smokeCanvas.style.setProperty("--hole-width", `${rect.width}px`);
     smokeCanvas.style.setProperty("--hole-height", `${rect.height}px`);
+    window.openAVAuto?.roblox?.setSlotBounds({
+      x: rect.left,
+      y: rect.top,
+      width: rect.width,
+      height: rect.height
+    });
   };
 
   window.addEventListener("resize", () => {
     smokeRenderer.resize();
     updateBackgroundHole();
   });
+  new ResizeObserver(updateBackgroundHole).observe(robloxSlot);
   updateBackgroundHole();
   smokeRenderer.render();
 }
@@ -172,3 +316,59 @@ if (window.openAVAuto?.window) {
   maximizeButton?.addEventListener("click", () => window.openAVAuto.window.maximizeToggle());
   closeButton?.addEventListener("click", () => window.openAVAuto.window.close());
 }
+
+window.openAVAuto?.macro?.onLog?.((message) => appendLog(message));
+
+const fillSelect = (select, values) => {
+  if (!select) return;
+  select.innerHTML = "";
+  values.forEach((value) => {
+    const option = document.createElement("option");
+    option.value = value;
+    option.textContent = value;
+    select.append(option);
+  });
+};
+
+const updateModeFields = () => {
+  if (!modeSelect) return;
+  const selectedMode = gameModes.find((mode) => mode.id === modeSelect.value) || gameModes[0];
+  const mapValues = selectedMode.maps || [selectedMode.fixedMap].filter(Boolean);
+  const actValues = selectedMode.acts || ["Default"];
+  const usesMapChoice = selectedMode.selector === "map" || selectedMode.selector === "boss" || selectedMode.selector === "portal";
+  const usesActChoice = actValues.length > 1;
+
+  fillSelect(mapSelect, mapValues);
+  fillSelect(actSelect, actValues);
+  mapField?.classList.toggle("is-hidden", !usesMapChoice);
+  actField?.classList.toggle("is-hidden", !usesActChoice);
+};
+
+if (modeSelect) {
+  fillSelect(modeSelect, gameModes.map((mode) => mode.label));
+  Array.from(modeSelect.options).forEach((option, index) => {
+    option.value = gameModes[index].id;
+  });
+  modeSelect.value = "story";
+  modeSelect.addEventListener("change", updateModeFields);
+  updateModeFields();
+  mapSelect.value = "Lebereo Raid";
+  actSelect.value = "Act 2";
+}
+
+alignRobloxButton?.addEventListener("click", () => {
+  window.openAVAuto?.roblox?.align();
+});
+
+startMacroButton?.addEventListener("click", () => {
+  appendLog("Starting macro...");
+  window.openAVAuto?.macro?.start({
+    mode: modeSelect?.value,
+    map: mapSelect?.value,
+    act: actSelect?.value
+  });
+});
+
+openConfigButton?.addEventListener("click", () => {
+  window.openAVAuto?.config?.open();
+});
