@@ -198,7 +198,7 @@ h2 {
 }
 
 .left-rail {
-  grid-template-rows: auto auto auto minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr);
 }
 
 .right-rail {
@@ -259,27 +259,31 @@ input {
 
 .stat-row {
   justify-content: space-between;
-  min-height: 27px;
+  min-height: 23px;
   color: var(--muted);
+  font-size: 0.86rem;
   font-weight: 560;
 }
 
 .stat-row strong {
   color: var(--text);
-  font-weight: 720;
+  font-size: 0.86rem;
+  font-weight: 680;
 }
 
 .log-panel {
   min-height: 0;
   overflow: hidden;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
 }
 
 .log-feed {
   min-height: 0;
   overflow-y: auto;
   color: var(--text);
-  font-size: 0.85rem;
-  font-weight: 620;
+  font-size: 0.82rem;
+  font-weight: 580;
 }
 
 .log-feed p {
@@ -431,7 +435,7 @@ kbd {
   }
 
   .left-rail {
-    grid-template-rows: auto auto auto minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr);
   }
 
   .hotkey-list {

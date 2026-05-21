@@ -13,11 +13,13 @@ let robloxAttached = false;
 let alignInFlight = false;
 let pendingAlign = false;
 let macroInFlight = false;
+let movementRecorder = null;
 
 const alignScript = path.join(__dirname, "align_roblox.py");
 const startStoryScript = path.join(__dirname, "start_story.py");
 const userConfigPath = path.join(app.getAppPath(), "data", "config", "user-config.json");
 const logPath = path.join(app.getAppPath(), "data", "logs", "openavauto.log");
+const movementStopFlagPath = path.join(app.getAppPath(), "data", "vision", "movement", "planetnamek.stop");
 
 const getRobloxTargetBounds = () => {
   if (!mainWindow || !slotBounds) return null;
@@ -140,9 +142,9 @@ const runStartMacro = async (options = {}) => {
   mainWindow?.setAlwaysOnTop(true, "screen-saver");
   mainWindow?.moveTop();
   const mode = options.mode || "story";
-  const map = options.map || "Lebereo Raid";
-  const act = options.act || "Act 2";
-  sendMainLog(`Sweeping ${mode} routes...`);
+  const map = options.map || "Planet Namak";
+  const act = options.act || "Act 1";
+  sendMainLog(`Starting ${mode}: ${map} / ${act}...`);
 
   return new Promise((resolve) => {
     const child = spawn(
@@ -163,8 +165,7 @@ const runStartMacro = async (options = {}) => {
         "--map",
         map,
         "--act",
-        act,
-        "--sweep-routes"
+        act
       ],
       { windowsHide: true }
     );
@@ -215,6 +216,221 @@ const runStartMacro = async (options = {}) => {
         }
         resolve({ ok: true, message: stdout.trim() });
     });
+  });
+};
+
+const runNamekHelper = async ({ flag, extraArgs = [], startMessage, failureLabel, emptySuccessMessage }) => {
+  if (macroInFlight) {
+    return { ok: false, error: "Macro is already running." };
+  }
+
+  const target = getRobloxTargetBounds();
+  if (!target) {
+    const error = "Roblox slot is not ready.";
+    sendMainLog(`${failureLabel} failed: ${error}`);
+    return { ok: false, error };
+  }
+
+  macroInFlight = true;
+  applyMainWindowShape();
+  mainWindow?.setAlwaysOnTop(true, "screen-saver");
+  mainWindow?.moveTop();
+  sendMainLog(startMessage);
+
+  return new Promise((resolve) => {
+    const child = spawn(
+      "py",
+      [
+        "-3",
+        startStoryScript,
+        "--x",
+        String(target.x),
+        "--y",
+        String(target.y),
+        "--width",
+        String(target.width),
+        "--height",
+        String(target.height),
+        "--spawn-template-map",
+        "planet-namek",
+        flag,
+        ...extraArgs
+      ],
+      { windowsHide: true }
+    );
+    let stderr = "";
+    let stdout = "";
+
+    const handleLines = (chunk, onLine) => {
+      chunk
+        .toString()
+        .split(/\r?\n/)
+        .filter(Boolean)
+        .forEach(onLine);
+    };
+
+    child.stdout.on("data", (chunk) => {
+      stdout += chunk.toString();
+      handleLines(chunk, sendMainLog);
+    });
+
+    child.stderr.on("data", (chunk) => {
+      stderr += chunk.toString();
+    });
+
+    child.on("error", (error) => {
+      macroInFlight = false;
+      applyMainWindowShape();
+      mainWindow?.setAlwaysOnTop(true, "screen-saver");
+      mainWindow?.moveTop();
+      sendMainLog(`${failureLabel} failed: ${error.message}`);
+      resolve({ ok: false, error: error.message });
+    });
+
+    child.on("close", (code) => {
+      macroInFlight = false;
+      applyMainWindowShape();
+      mainWindow?.setAlwaysOnTop(true, "screen-saver");
+      mainWindow?.moveTop();
+
+      if (code !== 0) {
+        const errorMessage = stderr.trim() || `${failureLabel} exited with code ${code}`;
+        sendMainLog(`${failureLabel} failed: ${errorMessage}`);
+        resolve({ ok: false, error: errorMessage });
+        return;
+      }
+
+      if (!stdout.trim()) {
+        sendMainLog(emptySuccessMessage);
+      }
+      resolve({ ok: true, message: stdout.trim() });
+    });
+  });
+};
+
+const runNamekCameraNormalization = () =>
+  runNamekHelper({
+    flag: "--normalize-namek-camera",
+    startMessage: "Normalizing Planet Namek camera...",
+    failureLabel: "Camera normalization",
+    emptySuccessMessage: "Camera normalization finished."
+  });
+
+const captureNamekSpawnAnchor = () =>
+  runNamekHelper({
+    flag: "--capture-namek-spawn-anchor",
+    startMessage: "Capturing Planet Namek spawn anchor...",
+    failureLabel: "Spawn anchor capture",
+    emptySuccessMessage: "Spawn anchor capture finished."
+  });
+
+const testNamekSpawnDetector = () =>
+  runNamekHelper({
+    flag: "--test-namek-spawn-detector",
+    extraArgs: ["--spawn-test-attempts", "100"],
+    startMessage: "Testing Planet Namek spawn detector...",
+    failureLabel: "Spawn detector test",
+    emptySuccessMessage: "Spawn detector test finished."
+  });
+
+const playNamekMovement = () =>
+  runNamekHelper({
+    flag: "--play-movement",
+    startMessage: "Playing saved Planet Namek movement...",
+    failureLabel: "Movement playback",
+    emptySuccessMessage: "Movement playback finished."
+  });
+
+const toggleMovementRecording = () => {
+  if (movementRecorder) {
+    fs.mkdirSync(path.dirname(movementStopFlagPath), { recursive: true });
+    fs.writeFileSync(movementStopFlagPath, "stop", "utf8");
+    sendMainLog("Stopping movement recording...");
+    return;
+  }
+
+  if (macroInFlight) {
+    sendMainLog("Movement recording failed: Macro is already running.");
+    return;
+  }
+
+  const target = getRobloxTargetBounds();
+  if (!target) {
+    sendMainLog("Movement recording failed: Roblox slot is not ready.");
+    return;
+  }
+
+  try {
+    if (fs.existsSync(movementStopFlagPath)) {
+      fs.unlinkSync(movementStopFlagPath);
+    }
+  } catch (error) {
+    sendMainLog(`Movement recording cleanup failed: ${error.message}`);
+  }
+
+  macroInFlight = true;
+  applyMainWindowShape();
+  mainWindow?.setAlwaysOnTop(true, "screen-saver");
+  mainWindow?.moveTop();
+  sendMainLog("Starting movement recording...");
+
+  movementRecorder = spawn(
+    "py",
+    [
+      "-3",
+      startStoryScript,
+      "--x",
+      String(target.x),
+      "--y",
+      String(target.y),
+      "--width",
+      String(target.width),
+      "--height",
+      String(target.height),
+      "--spawn-template-map",
+      "planet-namek",
+      "--record-movement"
+    ],
+    { windowsHide: true }
+  );
+  let stderr = "";
+
+  const handleLines = (chunk, onLine) => {
+    chunk
+      .toString()
+      .split(/\r?\n/)
+      .filter(Boolean)
+      .forEach(onLine);
+  };
+
+  movementRecorder.stdout.on("data", (chunk) => {
+    handleLines(chunk, sendMainLog);
+  });
+
+  movementRecorder.stderr.on("data", (chunk) => {
+    stderr += chunk.toString();
+  });
+
+  movementRecorder.on("error", (error) => {
+    movementRecorder = null;
+    macroInFlight = false;
+    applyMainWindowShape();
+    mainWindow?.setAlwaysOnTop(true, "screen-saver");
+    mainWindow?.moveTop();
+    sendMainLog(`Movement recording failed: ${error.message}`);
+  });
+
+  movementRecorder.on("close", (code) => {
+    movementRecorder = null;
+    macroInFlight = false;
+    applyMainWindowShape();
+    mainWindow?.setAlwaysOnTop(true, "screen-saver");
+    mainWindow?.moveTop();
+
+    if (code !== 0) {
+      const errorMessage = stderr.trim() || `Movement recording exited with code ${code}`;
+      sendMainLog(`Movement recording failed: ${errorMessage}`);
+    }
   });
 };
 
@@ -433,6 +649,21 @@ app.whenReady().then(() => {
   });
   globalShortcut.register("F2", () => {
     runStartMacro();
+  });
+  globalShortcut.register("F8", () => {
+    runNamekCameraNormalization();
+  });
+  globalShortcut.register("F9", () => {
+    captureNamekSpawnAnchor();
+  });
+  globalShortcut.register("F10", () => {
+    testNamekSpawnDetector();
+  });
+  globalShortcut.register("F11", () => {
+    toggleMovementRecording();
+  });
+  globalShortcut.register("Insert", () => {
+    playNamekMovement();
   });
 
   app.on("activate", () => {

@@ -1,0 +1,45 @@
+{
+  "map": "planet-namek",
+  "recordedAt": "2026-05-21T13:54:46+0100",
+  "duration": 6.655,
+  "rawSegments": [
+    {
+      "keys": [
+        "S"
+      ],
+      "start": 0.533,
+      "duration": 2.1
+    },
+    {
+      "keys": [
+        "A"
+      ],
+      "start": 3.306,
+      "duration": 0.184
+    }
+  ],
+  "optimized": {
+    "actions": [
+      {
+        "keys": [
+          "S"
+        ],
+        "duration": 2.034
+      },
+      {
+        "keys": [
+          "A"
+        ],
+        "duration": 0.184
+      }
+    ],
+    "rawTotals": {
+      "W": 0.0,
+      "A": 0.184,
+      "S": 2.1,
+      "D": 0.0
+    },
+    "mode": "raw"
+  },
+  "screenshot": "data\\map\\Planet_Namek.png"
+}

@@ -155,7 +155,7 @@ h1 {
 .task-head,
 .task-row {
   display: grid;
-  grid-template-columns: 82px 130px 86px minmax(150px, 1fr) 118px 124px 150px;
+  grid-template-columns: 78px 124px 78px minmax(140px, 1fr) 104px 108px 132px;
   gap: 8px;
   align-items: center;
 }
@@ -264,8 +264,14 @@ input {
 
 .row-actions {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 34px 34px;
-  gap: 6px;
+  grid-template-columns: minmax(0, 72px) 28px 28px;
+  gap: 5px;
+  justify-content: end;
+}
+
+.row-actions .danger-button {
+  padding: 0 8px;
+  font-size: 0.76rem;
 }
 
 .icon-button {
@@ -284,6 +290,6 @@ input {
 @media (max-width: 900px) {
   .task-head,
   .task-row {
-    grid-template-columns: 74px 118px 76px minmax(120px, 1fr) 96px 106px 132px;
+    grid-template-columns: 68px 112px 68px minmax(110px, 1fr) 88px 96px 118px;
   }
 }

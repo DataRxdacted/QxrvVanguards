@@ -13,11 +13,6 @@ const startMacroButton = document.querySelector("[data-start-macro]");
 const openMainSettingsButton = document.querySelector("[data-open-main-settings]");
 const openConfigButton = document.querySelector("[data-open-config]");
 const openTasksButton = document.querySelector("[data-open-tasks]");
-const modeSelect = document.querySelector("[data-mode-select]");
-const mapSelect = document.querySelector("[data-map-select]");
-const actSelect = document.querySelector("[data-act-select]");
-const mapField = document.querySelector("[data-map-field]");
-const actField = document.querySelector("[data-act-field]");
 
 const appendLog = (message, muted = false) => {
   if (!logFeed) return;
@@ -332,32 +327,6 @@ const fillSelect = (select, values) => {
   });
 };
 
-const updateModeFields = () => {
-  if (!modeSelect) return;
-  const selectedMode = gameModes.find((mode) => mode.id === modeSelect.value) || gameModes[0];
-  const mapValues = selectedMode.maps || [selectedMode.fixedMap].filter(Boolean);
-  const actValues = selectedMode.acts || ["Default"];
-  const usesMapChoice = selectedMode.selector === "map" || selectedMode.selector === "boss" || selectedMode.selector === "portal";
-  const usesActChoice = actValues.length > 1;
-
-  fillSelect(mapSelect, mapValues);
-  fillSelect(actSelect, actValues);
-  mapField?.classList.toggle("is-hidden", !usesMapChoice);
-  actField?.classList.toggle("is-hidden", !usesActChoice);
-};
-
-if (modeSelect) {
-  fillSelect(modeSelect, gameModes.map((mode) => mode.label));
-  Array.from(modeSelect.options).forEach((option, index) => {
-    option.value = gameModes[index].id;
-  });
-  modeSelect.value = "story";
-  modeSelect.addEventListener("change", updateModeFields);
-  updateModeFields();
-  mapSelect.value = "Lebereo Raid";
-  actSelect.value = "Act 2";
-}
-
 alignRobloxButton?.addEventListener("click", () => {
   window.openAVAuto?.roblox?.align();
 });
@@ -365,9 +334,9 @@ alignRobloxButton?.addEventListener("click", () => {
 startMacroButton?.addEventListener("click", () => {
   appendLog("Starting macro...");
   window.openAVAuto?.macro?.start({
-    mode: modeSelect?.value,
-    map: mapSelect?.value,
-    act: actSelect?.value
+    mode: "story",
+    map: "Lebereo Raid",
+    act: "Act 2"
   });
 });
 

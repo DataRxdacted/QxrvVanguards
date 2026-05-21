@@ -147,7 +147,7 @@ let userConfig = {
 
 const defaultTask = () => ({
   id: crypto.randomUUID(),
-  priority: 10,
+  priority: 0,
   mode: "story",
   repeat: 0,
   map: "Planet Namak",
@@ -174,7 +174,7 @@ const modeOptionHtml = (selected) => modeCatalog.map((mode) => (
 const normalizeTask = (task, index = 0) => {
   const next = { ...defaultTask(), ...task };
   const mode = modeInfo(next.mode);
-  next.priority = Number.isFinite(Number(next.priority)) ? Number(next.priority) : (index + 1) * 10;
+  next.priority = Number.isFinite(Number(next.priority)) ? Math.max(0, Number(next.priority)) : index;
   next.repeat = Math.max(0, Number(next.repeat || 0));
   if (!mode.maps.includes(next.map)) next.map = mode.maps[0] || "";
   if (!mode.acts.includes(next.act)) next.act = mode.acts[0] || "Default";
@@ -203,7 +203,7 @@ const renderTasks = () => {
     const mode = modeInfo(task.mode);
     return `
       <article class="task-row" data-task-index="${index}">
-        <input type="number" min="1" data-task-field="priority" value="${task.priority}" title="Higher numbers interrupt lower priority repeats." />
+        <input type="number" min="0" data-task-field="priority" value="${task.priority}" title="0 is highest priority. Higher numbers run later." />
         <select data-task-field="mode">${modeOptionHtml(task.mode)}</select>
         <input type="number" min="0" data-task-field="repeat" value="${task.repeat}" title="0 repeats forever until a higher priority available task interrupts it." />
         <select data-task-field="map">${optionHtml(mode.maps, task.map)}</select>
@@ -280,7 +280,7 @@ startOverToggle?.addEventListener("change", () => {
 addTaskButton?.addEventListener("click", () => {
   userConfig.tasks.items.push({
     ...defaultTask(),
-    priority: (userConfig.tasks.items.length + 1) * 10
+    priority: userConfig.tasks.items.length
   });
   renderTasks();
   scheduleSave();
