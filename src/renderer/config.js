@@ -307,18 +307,24 @@ const renderMarkers = () => {
   const rect = getContainedImageRect();
   if (!rect) return;
   const mapConfig = getCurrentCoordinateSet();
-  const slotConfig = mapConfig.slots[activeSlotSelect.value] || {};
+  const activeSlot = activeSlotSelect.value;
+  const slotNames = ["Slot 1", "Slot 2", "Slot 3", "Slot 4", "Slot 5", "Slot 6"];
 
-  Object.entries(slotConfig).forEach(([unit, point]) => {
-    if (!point || point.x <= 0 || point.y <= 0) return;
-    const left = rect.left + (point.x / mapPreview.naturalWidth) * rect.width;
-    const top = rect.top + (point.y / mapPreview.naturalHeight) * rect.height;
-    const marker = document.createElement("div");
-    marker.className = "coordinate-marker";
-    marker.style.left = `${left}px`;
-    marker.style.top = `${top}px`;
-    marker.innerHTML = `<span></span><strong>SL${activeSlotSelect.value.replace("Slot ", "")}/UN${unit.replace("Unit ", "")}</strong>`;
-    markerLayer.append(marker);
+  slotNames.forEach((slot) => {
+    const slotConfig = mapConfig.slots[slot] || {};
+    const isActive = slot === activeSlot;
+
+    Object.entries(slotConfig).forEach(([unit, point]) => {
+      if (!point || point.x <= 0 || point.y <= 0) return;
+      const left = rect.left + (point.x / mapPreview.naturalWidth) * rect.width;
+      const top = rect.top + (point.y / mapPreview.naturalHeight) * rect.height;
+      const marker = document.createElement("div");
+      marker.className = `coordinate-marker${isActive ? "" : " inactive"}`;
+      marker.style.left = `${left}px`;
+      marker.style.top = `${top}px`;
+      marker.innerHTML = `<span></span><strong>SL${slot.replace("Slot ", "")}/UN${unit.replace("Unit ", "")}</strong>`;
+      markerLayer.append(marker);
+    });
   });
 };
 

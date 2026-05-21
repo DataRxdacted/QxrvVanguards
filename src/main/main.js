@@ -141,10 +141,13 @@ const runStartMacro = async (options = {}) => {
   applyMainWindowShape();
   mainWindow?.setAlwaysOnTop(true, "screen-saver");
   mainWindow?.moveTop();
-  const mode = options.mode || "story";
-  const map = options.map || "Planet Namak";
-  const act = options.act || "Act 1";
-  sendMainLog(`Starting ${mode}: ${map} / ${act}...`);
+  const task = options.task || getNextTask();
+  const mode = options.mode || task?.mode || "story";
+  const map = options.map || task?.map || "Planet Namak";
+  const act = options.act || task?.act || "Act 1";
+  const team = options.team || task?.team || "Team 1";
+  const shouldRunNamekSetup = mode === "story" && map === "Planet Namak" && act === "Act 1";
+  sendMainLog(`Starting task: ${mode} / ${map} / ${act} / ${team}...`);
 
   return new Promise((resolve) => {
     const child = spawn(
@@ -165,7 +168,8 @@ const runStartMacro = async (options = {}) => {
         "--map",
         map,
         "--act",
-        act
+        act,
+        ...(shouldRunNamekSetup ? ["--post-route-namek-setup"] : [])
       ],
       { windowsHide: true }
     );
@@ -341,6 +345,30 @@ const playNamekMovement = () =>
     emptySuccessMessage: "Movement playback finished."
   });
 
+const pitchCameraDown = () =>
+  runNamekHelper({
+    flag: "--pitch-camera-down",
+    startMessage: "Pitching camera down...",
+    failureLabel: "Camera pitch test",
+    emptySuccessMessage: "Camera pitch test finished."
+  });
+
+const testUnitPlacement = () =>
+  runNamekHelper({
+    flag: "--test-unit-placement",
+    startMessage: "Testing temporary unit placement...",
+    failureLabel: "Unit placement test",
+    emptySuccessMessage: "Unit placement test finished."
+  });
+
+const testHudOcr = () =>
+  runNamekHelper({
+    flag: "--test-hud-ocr",
+    startMessage: "Reading HUD OCR...",
+    failureLabel: "HUD OCR test",
+    emptySuccessMessage: "HUD OCR test finished."
+  });
+
 const toggleMovementRecording = () => {
   if (movementRecorder) {
     fs.mkdirSync(path.dirname(movementStopFlagPath), { recursive: true });
@@ -475,6 +503,22 @@ const readUserConfig = () => {
     console.error("Failed to read user config:", error);
     return {};
   }
+};
+
+const getNextTask = () => {
+  const config = readUserConfig();
+  const tasks = Array.isArray(config?.tasks?.items) ? config.tasks.items : [];
+  const runnableTasks = tasks
+    .filter((task) => task && task.mode && task.map)
+    .map((task, index) => ({
+      ...task,
+      priority: Number.isFinite(Number(task.priority)) ? Number(task.priority) : index,
+      repeat: Number.isFinite(Number(task.repeat)) ? Number(task.repeat) : 0,
+      order: index
+    }))
+    .sort((first, second) => first.priority - second.priority || first.order - second.order);
+
+  return runnableTasks[0] || null;
 };
 
 const writeUserConfig = (_event, config) => {
@@ -664,6 +708,12 @@ app.whenReady().then(() => {
   });
   globalShortcut.register("Insert", () => {
     playNamekMovement();
+  });
+  globalShortcut.register("PageDown", () => {
+    testUnitPlacement();
+  });
+  globalShortcut.register("PageUp", () => {
+    testHudOcr();
   });
 
   app.on("activate", () => {

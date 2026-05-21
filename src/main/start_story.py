@@ -2,7 +2,10 @@ import argparse
 import ctypes
 import json
 import os
+import random
+import re
 import struct
+import subprocess
 import sys
 import time
 import zlib
@@ -15,10 +18,14 @@ gdi32 = ctypes.windll.gdi32
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 SPAWN_TEMPLATE_DIR = os.path.join(PROJECT_ROOT, "data", "vision", "spawn-anchors")
 MOVEMENT_DIR = os.path.join(PROJECT_ROOT, "data", "vision", "movement")
+HUD_DEBUG_DIR = os.path.join(PROJECT_ROOT, "data", "vision", "debug", "hud")
+WIN_OCR_SCRIPT = os.path.join(os.path.dirname(__file__), "win_ocr.ps1")
 
 MOUSEEVENTF_LEFTDOWN = 0x0002
 MOUSEEVENTF_LEFTUP = 0x0004
 MOUSEEVENTF_MOVE = 0x0001
+MOUSEEVENTF_RIGHTDOWN = 0x0008
+MOUSEEVENTF_RIGHTUP = 0x0010
 MOUSEEVENTF_WHEEL = 0x0800
 KEYEVENTF_KEYUP = 0x0002
 VK_CONTROL = 0x11
@@ -146,6 +153,12 @@ PLANET_NAMEK_CAMERA = {
     "zoom_y": 300,
     "zoom_in_ticks": 25,
     "zoom_out_ticks": 12,
+    "look_down_drag_x": 400,
+    "look_down_start_y": 220,
+    "look_down_end_y": 560,
+    "look_down_steps": 14,
+    "look_down_repeats": 1,
+    "look_down_relative_dy": 70,
     "settings_x": 20,
     "settings_y": 580,
     "settings_open_delay": 0.75,
@@ -155,6 +168,31 @@ PLANET_NAMEK_CAMERA = {
     "teleport_spawn_y": 292,
     "restart_match_x": 648,
     "restart_match_y": 264,
+    "restart_confirm_yes_x": 352,
+    "restart_confirm_yes_y": 331,
+    "restart_alert_cancel_x": 410,
+    "restart_alert_cancel_y": 328,
+    "restart_alert_delay": 1.0,
+    "match_start_x": 439,
+    "match_start_y": 429,
+    "match_confirm_start_x": 58,
+    "match_confirm_start_y": 400,
+    "match_load_timeout": 90,
+    "match_loaded_check_x": 650,
+    "match_loaded_check_y": 220,
+    "match_loaded_check_w": 145,
+    "match_loaded_check_h": 175,
+    "match_loaded_threshold": 0.025,
+    "chat_toggle_x": 165,
+    "chat_toggle_y": 38,
+    "chat_input_x": 8,
+    "chat_input_y": 20,
+    "chat_input_w": 232,
+    "chat_input_h": 34,
+    "chat_input_step": 6,
+    "chat_input_dark_threshold": 0.68,
+    "vote_start_yes_x": 460,
+    "vote_start_yes_y": 95,
     "teleport_spawn_max_attempts": None,
     "spawn_track_x": 275,
     "spawn_track_y_values": [455, 490, 525, 560],
@@ -172,6 +210,30 @@ PLANET_NAMEK_CAMERA = {
     "place_slot_scan": SCAN_5,
     "place_x": 400,
     "place_y": 140,
+    "place_random_min_x": 250,
+    "place_random_max_x": 650,
+    "place_random_min_y": 115,
+    "place_random_max_y": 430,
+    "place_attempts": 40,
+    "place_hover_delay": 0.04,
+    "place_hover_wiggle_px": 2,
+    "place_click_delay": 0.04,
+    "place_confirm_delay": 0.06,
+    "place_invalid_message_x": 250,
+    "place_invalid_message_y": 65,
+    "place_invalid_message_w": 310,
+    "place_invalid_message_h": 34,
+    "place_invalid_cursor_w": 56,
+    "place_invalid_cursor_h": 56,
+    "place_invalid_step": 4,
+    "place_invalid_red_threshold": 0.018,
+    "unit_panel_x": 10,
+    "unit_panel_y": 105,
+    "unit_panel_w": 150,
+    "unit_panel_h": 170,
+    "unit_panel_step": 16,
+    "unit_panel_dark_threshold": 0.16,
+    "unit_panel_saturated_threshold": 0.025,
     "unit_view_x": 125,
     "unit_view_y": 230,
     "view_left_x": 338,
@@ -184,6 +246,19 @@ PLANET_NAMEK_CAMERA = {
     "movement_output_path": os.path.join(MOVEMENT_DIR, "planetnamek.json"),
     "movement_screenshot_path": os.path.join(PROJECT_ROOT, "data", "map", "Planet_Namek.png"),
     "movement_screenshot_zoom_out_ticks": 35,
+}
+
+HUD_OCR = {
+    "wave": {"x": 224, "y": 14, "width": 118, "height": 28, "scales": [6, 8]},
+    "money": {"x": 370, "y": 502, "width": 54, "height": 20, "scales": [6, 8, 10, 12]},
+    "unit_costs": [
+        {"slot": "Slot 1", "x": 232, "y": 552, "width": 58, "height": 22, "scales": [6, 8, 10, 12, 16]},
+        {"slot": "Slot 2", "x": 288, "y": 548, "width": 68, "height": 30, "scales": [6, 8, 10, 12, 16]},
+        {"slot": "Slot 3", "x": 340, "y": 552, "width": 70, "height": 22, "scales": [6, 8, 10, 12, 16]},
+        {"slot": "Slot 4", "x": 404, "y": 552, "width": 64, "height": 22, "scales": [6, 8, 10, 12, 16]},
+        {"slot": "Slot 5", "x": 462, "y": 550, "width": 64, "height": 26, "scales": [6, 8, 10, 12, 16]},
+        {"slot": "Slot 6", "x": 526, "y": 552, "width": 58, "height": 22, "scales": [6, 8, 10, 12, 16]},
+    ],
 }
 
 user32.SetCursorPos.argtypes = [ctypes.c_int, ctypes.c_int]
@@ -312,7 +387,13 @@ def sleep(seconds=0.28):
 
 
 def log(message):
-    print(message, flush=True)
+    text = str(message)
+    try:
+        print(text, flush=True)
+    except UnicodeEncodeError:
+        encoding = sys.stdout.encoding or "utf-8"
+        safe_text = text.encode(encoding, errors="replace").decode(encoding, errors="replace")
+        print(safe_text, flush=True)
 
 
 def screen_point(bounds, x, y):
@@ -336,9 +417,27 @@ def click(bounds, x, y, delay=0.32):
     sleep(delay)
 
 
+def click_fast(bounds, x, y, delay=0.04):
+    sx, sy = screen_point(bounds, x, y)
+    user32.SetCursorPos(sx, sy)
+    sleep(0.015)
+    wiggle_cursor(1)
+    sleep(0.015)
+    user32.mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, None)
+    sleep(0.025)
+    user32.mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, None)
+    sleep(delay)
+
+
 def move_to(bounds, x, y):
     sx, sy = screen_point(bounds, x, y)
     user32.SetCursorPos(sx, sy)
+
+
+def wiggle_cursor(pixels=1):
+    user32.mouse_event(MOUSEEVENTF_MOVE, pixels, 0, 0, None)
+    sleep(0.02)
+    user32.mouse_event(MOUSEEVENTF_MOVE, -pixels, 0, 0, None)
 
 
 def scroll(bounds, x, y, steps, delay=0.12):
@@ -353,6 +452,49 @@ def scroll(bounds, x, y, steps, delay=0.12):
     for _ in range(abs(steps)):
         user32.mouse_event(MOUSEEVENTF_WHEEL, 0, 0, delta, None)
         sleep(delay)
+
+
+def drag_right(bounds, start_x, start_y, end_x, end_y, steps=20, delay=0.01):
+    sx, sy = screen_point(bounds, start_x, start_y)
+    ex, ey = screen_point(bounds, end_x, end_y)
+    user32.SetCursorPos(sx, sy)
+    sleep(0.08)
+    user32.mouse_event(MOUSEEVENTF_RIGHTDOWN, 0, 0, 0, None)
+    sleep(0.05)
+    for step in range(1, steps + 1):
+        x = sx + int((ex - sx) * step / steps)
+        y = sy + int((ey - sy) * step / steps)
+        user32.SetCursorPos(x, y)
+        sleep(delay)
+    user32.mouse_event(MOUSEEVENTF_RIGHTUP, 0, 0, 0, None)
+    sleep(0.15)
+
+
+def drag_right_relative(bounds, x, y, dx, dy, steps=20, delay=0.01):
+    sx, sy = screen_point(bounds, x, y)
+    user32.SetCursorPos(sx, sy)
+    sleep(0.08)
+    user32.mouse_event(MOUSEEVENTF_RIGHTDOWN, 0, 0, 0, None)
+    sleep(0.05)
+    for _ in range(steps):
+        user32.mouse_event(MOUSEEVENTF_MOVE, dx, dy, 0, None)
+        sleep(delay)
+    user32.mouse_event(MOUSEEVENTF_RIGHTUP, 0, 0, 0, None)
+    user32.mouse_event(MOUSEEVENTF_MOVE, 0, 0, 0, None)
+    sleep(0.35)
+
+
+def pitch_camera_down(bounds):
+    log("Pitching camera down...")
+    for _ in range(PLANET_NAMEK_CAMERA["look_down_repeats"]):
+        drag_right_relative(
+            bounds,
+            PLANET_NAMEK_CAMERA["look_down_drag_x"],
+            PLANET_NAMEK_CAMERA["look_down_start_y"],
+            0,
+            PLANET_NAMEK_CAMERA["look_down_relative_dy"],
+            PLANET_NAMEK_CAMERA["look_down_steps"],
+        )
 
 
 def normalize_name(value):
@@ -478,6 +620,7 @@ def hold_key(vk, seconds):
 def normalize_planet_namek_camera(bounds, map_key=None):
     log("Normalizing Planet Namek camera...")
     focus_roblox()
+    close_match_chat(bounds)
     orient_planet_namek_camera(bounds)
     teleport_until_spawn_anchor(bounds, map_key)
     log("Planet Namek camera normalized.")
@@ -501,15 +644,165 @@ def orient_planet_namek_camera(bounds):
         PLANET_NAMEK_CAMERA["zoom_out_ticks"],
         delay=0.035,
     )
+    pitch_camera_down(bounds)
 
-    log("Placing cheapest unit from slot 5...")
-    tap_scan(PLANET_NAMEK_CAMERA["place_slot_scan"])
-    click(bounds, PLANET_NAMEK_CAMERA["place_x"], PLANET_NAMEK_CAMERA["place_y"], 0.5)
+    place_temporary_camera_unit(bounds)
     click(bounds, PLANET_NAMEK_CAMERA["unit_view_x"], PLANET_NAMEK_CAMERA["unit_view_y"], 0.45)
     click(bounds, PLANET_NAMEK_CAMERA["view_left_x"], PLANET_NAMEK_CAMERA["view_left_y"], 0.45)
     click(bounds, PLANET_NAMEK_CAMERA["view_exit_x"], PLANET_NAMEK_CAMERA["view_exit_y"], 0.35)
     log("Selling temporary camera unit...")
     tap_scan(PLANET_NAMEK_CAMERA["sell_unit_scan"])
+
+
+def region_color_ratios(bounds, x, y, width, height, step):
+    hdc = user32.GetDC(None)
+    if not hdc:
+        raise OSError("GetDC failed")
+
+    dark = 0
+    saturated = 0
+    samples = 0
+    try:
+        for py in range(y, y + height, step):
+            for px in range(x, x + width, step):
+                sx, sy = screen_point(bounds, px, py)
+                red, green, blue = colorref_to_rgb(gdi32.GetPixel(hdc, sx, sy))
+                samples += 1
+                if red <= 45 and green <= 45 and blue <= 55:
+                    dark += 1
+                if max(red, green, blue) >= 115 and max(red, green, blue) - min(red, green, blue) >= 55:
+                    saturated += 1
+    finally:
+        user32.ReleaseDC(None, hdc)
+
+    if not samples:
+        return 0, 0
+    return dark / samples, saturated / samples
+
+
+def is_unit_panel_open(bounds):
+    dark_ratio, saturated_ratio = region_color_ratios(
+        bounds,
+        PLANET_NAMEK_CAMERA["unit_panel_x"],
+        PLANET_NAMEK_CAMERA["unit_panel_y"],
+        PLANET_NAMEK_CAMERA["unit_panel_w"],
+        PLANET_NAMEK_CAMERA["unit_panel_h"],
+        PLANET_NAMEK_CAMERA["unit_panel_step"],
+    )
+    return (
+        dark_ratio >= PLANET_NAMEK_CAMERA["unit_panel_dark_threshold"]
+        and saturated_ratio >= PLANET_NAMEK_CAMERA["unit_panel_saturated_threshold"]
+    )
+
+
+def red_pixel_ratio(bounds, x, y, width, height, step):
+    hdc = user32.GetDC(None)
+    if not hdc:
+        raise OSError("GetDC failed")
+
+    red_pixels = 0
+    samples = 0
+    try:
+        for py in range(y, y + height, step):
+            for px in range(x, x + width, step):
+                sx, sy = screen_point(bounds, px, py)
+                red, green, blue = colorref_to_rgb(gdi32.GetPixel(hdc, sx, sy))
+                samples += 1
+                if red >= 145 and green <= 80 and blue <= 90:
+                    red_pixels += 1
+    finally:
+        user32.ReleaseDC(None, hdc)
+
+    return red_pixels / samples if samples else 0
+
+
+def has_invalid_place_feedback(bounds, x, y):
+    cursor_ratio = red_pixel_ratio(
+        bounds,
+        x - PLANET_NAMEK_CAMERA["place_invalid_cursor_w"] // 2,
+        y - PLANET_NAMEK_CAMERA["place_invalid_cursor_h"] // 2,
+        PLANET_NAMEK_CAMERA["place_invalid_cursor_w"],
+        PLANET_NAMEK_CAMERA["place_invalid_cursor_h"],
+        PLANET_NAMEK_CAMERA["place_invalid_step"],
+    )
+    message_ratio = red_pixel_ratio(
+        bounds,
+        PLANET_NAMEK_CAMERA["place_invalid_message_x"],
+        PLANET_NAMEK_CAMERA["place_invalid_message_y"],
+        PLANET_NAMEK_CAMERA["place_invalid_message_w"],
+        PLANET_NAMEK_CAMERA["place_invalid_message_h"],
+        PLANET_NAMEK_CAMERA["place_invalid_step"],
+    )
+    return max(cursor_ratio, message_ratio) >= PLANET_NAMEK_CAMERA["place_invalid_red_threshold"]
+
+
+def move_to_viewport_point(bounds, x, y):
+    sx, sy = screen_point(bounds, x, y)
+    user32.SetCursorPos(sx, sy)
+
+
+def hover_unit_place_point(bounds, x, y):
+    move_to_viewport_point(bounds, x, y)
+    sleep(0.04)
+    wiggle_cursor(PLANET_NAMEK_CAMERA["place_hover_wiggle_px"])
+    sleep(PLANET_NAMEK_CAMERA["place_hover_delay"])
+
+
+def random_unit_place_point():
+    return (
+        random.randint(PLANET_NAMEK_CAMERA["place_random_min_x"], PLANET_NAMEK_CAMERA["place_random_max_x"]),
+        random.randint(PLANET_NAMEK_CAMERA["place_random_min_y"], PLANET_NAMEK_CAMERA["place_random_max_y"]),
+    )
+
+
+def place_temporary_camera_unit(bounds):
+    max_attempts = PLANET_NAMEK_CAMERA["place_attempts"]
+    first_point = (PLANET_NAMEK_CAMERA["place_x"], PLANET_NAMEK_CAMERA["place_y"])
+    log("Placing cheapest unit from slot 5...")
+
+    for attempt in range(1, max_attempts + 1):
+        x, y = first_point if attempt == 1 else random_unit_place_point()
+        tap_scan_fast(PLANET_NAMEK_CAMERA["place_slot_scan"])
+        hover_unit_place_point(bounds, x, y)
+        log(f"Trying temporary unit placement ({attempt}/{max_attempts}) at ({x}, {y})...")
+        click_fast(bounds, x, y, PLANET_NAMEK_CAMERA["place_click_delay"])
+        sleep(PLANET_NAMEK_CAMERA["place_confirm_delay"])
+        if is_unit_panel_open(bounds):
+            log("Temporary unit placed and selected.")
+            return
+
+    raise RuntimeError("Could not place the temporary camera unit after multiple random attempts.")
+
+
+def test_temporary_unit_placement(bounds):
+    log("Testing temporary unit placement...")
+    focus_roblox()
+    close_match_chat(bounds)
+    place_temporary_camera_unit(bounds)
+    sleep(0.2)
+    log("Selling test unit...")
+    tap_scan_fast(PLANET_NAMEK_CAMERA["sell_unit_scan"])
+    log("Temporary unit placement test finished.")
+
+
+def is_chat_open(bounds):
+    dark_ratio, _ = region_color_ratios(
+        bounds,
+        PLANET_NAMEK_CAMERA["chat_input_x"],
+        PLANET_NAMEK_CAMERA["chat_input_y"],
+        PLANET_NAMEK_CAMERA["chat_input_w"],
+        PLANET_NAMEK_CAMERA["chat_input_h"],
+        PLANET_NAMEK_CAMERA["chat_input_step"],
+    )
+    log(f"Chat input score: {dark_ratio:.2f}")
+    return dark_ratio >= PLANET_NAMEK_CAMERA["chat_input_dark_threshold"]
+
+
+def close_match_chat(bounds):
+    if not is_chat_open(bounds):
+        return
+    log("Closing in-match chat...")
+    click(bounds, PLANET_NAMEK_CAMERA["chat_toggle_x"], PLANET_NAMEK_CAMERA["chat_toggle_y"], 0.35)
 
 
 def teleport_to_spawn(bounds):
@@ -547,7 +840,7 @@ def teleport_until_spawn_anchor(bounds, map_key=None):
         attempt = 0
         while max_attempts is None or attempt < max_attempts:
             attempt += 1
-            total = "∞" if max_attempts is None else str(max_attempts)
+            total = "infinite" if max_attempts is None else str(max_attempts)
             log(f"Spawn anchor not found. Teleporting to spawn ({attempt}/{total})...")
             teleport_to_spawn(bounds)
             log("Checking spawn while settings is still open...")
@@ -765,6 +1058,88 @@ def play_movement(bounds):
     log("Saved movement route finished.")
 
 
+def restart_match(bounds):
+    log("Restarting match from settings...")
+    open_settings(bounds)
+    try:
+        click(bounds, PLANET_NAMEK_CAMERA["restart_match_x"], PLANET_NAMEK_CAMERA["restart_match_y"], 0.6)
+        log("Confirming restart vote...")
+        click(
+            bounds,
+            PLANET_NAMEK_CAMERA["restart_confirm_yes_x"],
+            PLANET_NAMEK_CAMERA["restart_confirm_yes_y"],
+            0.6,
+        )
+    finally:
+        close_settings(bounds)
+    sleep(PLANET_NAMEK_CAMERA["restart_alert_delay"])
+    log("Closing restart alert...")
+    click(
+        bounds,
+        PLANET_NAMEK_CAMERA["restart_alert_cancel_x"],
+        PLANET_NAMEK_CAMERA["restart_alert_cancel_y"],
+        0.35,
+    )
+    log("Restart requested.")
+
+
+def click_match_start(bounds):
+    log("Starting selected match...")
+    click(bounds, PLANET_NAMEK_CAMERA["match_start_x"], PLANET_NAMEK_CAMERA["match_start_y"], 0.8)
+    log("Confirming match start...")
+    click(bounds, PLANET_NAMEK_CAMERA["match_confirm_start_x"], PLANET_NAMEK_CAMERA["match_confirm_start_y"], 0.8)
+
+
+def is_match_loaded(bounds):
+    x = PLANET_NAMEK_CAMERA["match_loaded_check_x"]
+    y = PLANET_NAMEK_CAMERA["match_loaded_check_y"]
+    width = PLANET_NAMEK_CAMERA["match_loaded_check_w"]
+    height = PLANET_NAMEK_CAMERA["match_loaded_check_h"]
+    hdc = user32.GetDC(None)
+    if not hdc:
+        raise OSError("GetDC failed")
+
+    matches = 0
+    samples = 0
+    try:
+        for py in range(y, y + height, 5):
+            for px in range(x, x + width, 5):
+                sx, sy = screen_point(bounds, px, py)
+                red, green, blue = colorref_to_rgb(gdi32.GetPixel(hdc, sx, sy))
+                samples += 1
+                is_match_panel_color = (
+                    (green >= 115 and blue >= 115 and red <= 80)
+                    or (red >= 140 and green <= 90 and blue <= 100)
+                    or (red >= 150 and green >= 120 and blue <= 80)
+                    or (blue >= 130 and red <= 100 and green <= 140)
+                )
+                if is_match_panel_color:
+                    matches += 1
+    finally:
+        user32.ReleaseDC(None, hdc)
+
+    score = matches / samples if samples else 0
+    log(f"Match loaded score: {score:.2f}")
+    return score >= PLANET_NAMEK_CAMERA["match_loaded_threshold"]
+
+
+def wait_for_match_loaded(bounds):
+    timeout = PLANET_NAMEK_CAMERA["match_load_timeout"]
+    log("Waiting for match UI to load...")
+    deadline = time.perf_counter() + timeout
+    while time.perf_counter() < deadline:
+        if is_match_loaded(bounds):
+            log("Match loaded.")
+            return
+        sleep(1.0)
+    raise RuntimeError("Timed out waiting for match UI to load.")
+
+
+def click_vote_start(bounds):
+    log("Clicking Vote Start yes...")
+    click(bounds, PLANET_NAMEK_CAMERA["vote_start_yes_x"], PLANET_NAMEK_CAMERA["vote_start_yes_y"], 0.45)
+
+
 def spawn_template_path(map_key=None):
     key = normalize_name(map_key or PLANET_NAMEK_CAMERA["spawn_template_map"]) or "unknown-map"
     return os.path.join(SPAWN_TEMPLATE_DIR, f"{key}.json")
@@ -920,6 +1295,250 @@ def write_png(path, width, height, rows):
         file.write(data)
 
 
+def crop_rgb_rows(rows, x, y, width, height):
+    return [row[x * 3 : (x + width) * 3] for row in rows[y : y + height]]
+
+
+def scale_rgb_rows(rows, width, scale):
+    if scale <= 1:
+        return width, len(rows), rows
+
+    scaled_rows = []
+    for row in rows:
+        scaled_row = bytearray()
+        for index in range(width):
+            pixel = row[index * 3 : index * 3 + 3]
+            for _ in range(scale):
+                scaled_row.extend(pixel)
+        for _ in range(scale):
+            scaled_rows.append(bytes(scaled_row))
+
+    return width * scale, len(rows) * scale, scaled_rows
+
+
+def high_contrast_ocr_rows(rows, width, mode="yellow"):
+    processed = []
+    for row in rows:
+        output = bytearray()
+        for index in range(width):
+            offset = index * 3
+            red = row[offset]
+            green = row[offset + 1]
+            blue = row[offset + 2]
+            if mode == "dim-yellow":
+                is_text = (
+                    red >= 38
+                    and green >= 25
+                    and blue <= 70
+                    and red >= green + 2
+                    and green >= blue + 6
+                    and not (red > 210 and green > 170 and blue < 90)
+                )
+            elif mode == "dark":
+                is_text = red < 135 and green < 105 and blue < 70 and red + green + blue < 260
+            else:
+                is_yellow_text = red >= 135 and green >= 95 and blue <= 135 and red >= blue + 30
+                is_white_text = red >= 170 and green >= 170 and blue >= 170
+                is_text = is_yellow_text or is_white_text
+
+            if is_text:
+                output.extend((255, 255, 255))
+            else:
+                output.extend((0, 0, 0))
+        processed.append(bytes(output))
+    return processed
+
+
+def write_scaled_crop(path, crop_rows, width, scale):
+    scaled_width, scaled_height, scaled_rows = scale_rgb_rows(crop_rows, width, scale)
+    write_png(path, scaled_width, scaled_height, scaled_rows)
+    return path
+
+
+def write_ocr_crop(name, width, height, rows, region, mode="yellow", scale=8):
+    os.makedirs(HUD_DEBUG_DIR, exist_ok=True)
+    crop_rows = crop_rgb_rows(rows, region["x"], region["y"], region["width"], region["height"])
+    path = os.path.join(HUD_DEBUG_DIR, f"{name}_{mode}_{scale}x.png")
+    if mode == "raw":
+        return write_scaled_crop(path, crop_rows, region["width"], scale)
+
+    ocr_rows = high_contrast_ocr_rows(crop_rows, region["width"], mode)
+    return write_scaled_crop(path, ocr_rows, region["width"], scale)
+
+
+def read_windows_ocr_text(image_path):
+    if not os.path.exists(WIN_OCR_SCRIPT):
+        raise RuntimeError(f"Missing OCR helper: {WIN_OCR_SCRIPT}")
+
+    result = subprocess.run(
+        [
+            "powershell",
+            "-NoProfile",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-File",
+            WIN_OCR_SCRIPT,
+            "-ImagePath",
+            image_path,
+        ],
+        capture_output=True,
+        text=True,
+        timeout=8,
+    )
+    if result.returncode != 0:
+        raise RuntimeError(result.stderr.strip() or "Windows OCR failed.")
+    return " ".join(result.stdout.split())
+
+
+def parse_compact_number(text):
+    spaced = text.upper().translate(str.maketrans({"O": "0", "I": "1", "L": "1"}))
+    split_thousands = re.search(r"(\d{2})\s+(\d{2})(?=\D|$)", spaced)
+    if split_thousands:
+        return int(f"{split_thousands.group(1)}{split_thousands.group(2)}0")
+
+    cleaned = spaced.replace(",", "").replace(" ", "")
+    cleaned = re.sub(r"(?<=\d)[/\\|](?=\d)", "", cleaned)
+    cleaned = re.sub(r"(?<=\d)[.](?=\d{3}\D|$)", "", cleaned)
+    match = re.search(r"(\d+(?:\.\d+)?)([KMB])?", cleaned)
+    if not match:
+        return None
+
+    value = float(match.group(1))
+    suffix = match.group(2)
+    has_decimal_short_scale = "." in match.group(1) and len(match.group(1).split(".", 1)[1]) <= 2
+    if suffix is None and "." in match.group(1) and len(match.group(1).split(".", 1)[1]) <= 2:
+        value = float(match.group(1).replace(".", ""))
+    elif suffix == "K" and has_decimal_short_scale:
+        value *= 1_000
+    elif suffix == "M" and has_decimal_short_scale:
+        value *= 1_000_000
+    elif suffix == "B" and has_decimal_short_scale:
+        value *= 1_000_000_000
+    return int(value)
+
+
+def parse_wave_text(text):
+    text = text.upper().translate(str.maketrans({"O": "0", "I": "1", "L": "1", "A": "1", "S": "5"}))
+    match = re.search(r"(\d+)\s*/\s*(\d+)", text)
+    if match:
+        return int(match.group(1)), int(match.group(2))
+
+    match = re.search(r"(\d+)\D+(\d+)", text)
+    if match:
+        return int(match.group(1)), int(match.group(2))
+
+    numbers = re.findall(r"\d+", text)
+    if numbers:
+        return int(numbers[0]), int(numbers[1]) if len(numbers) > 1 else None
+    return None, None
+
+
+def digit_count(text):
+    return len(re.findall(r"\d", text))
+
+
+def normalized_digit_count(text):
+    normalized = text.upper().translate(str.maketrans({"O": "0", "I": "1", "L": "1"}))
+    return len(re.findall(r"\d", normalized))
+
+
+def choose_best_number(candidates, minimum=None):
+    grouped = {}
+    for candidate in candidates:
+        value = candidate["value"]
+        if value is None:
+            continue
+        if minimum is not None and value < minimum:
+            continue
+        grouped.setdefault(value, []).append(candidate)
+
+    if not grouped:
+        return None
+
+    def score(item):
+        value, matches = item
+        best_digits = max(match["digits"] for match in matches)
+        best_scale_score = max(20 - abs(match["scale"] - 10) for match in matches)
+        best_mode_score = max({"raw": 30, "dim-yellow": 10, "dark": 0}.get(match["mode"], 0) for match in matches)
+        support = len(matches)
+        return support * 1000 + best_digits * 100 + best_scale_score + best_mode_score
+
+    return max(grouped.items(), key=score)[0]
+
+
+def read_region_number(name, width, height, rows, region, modes, minimum=None):
+    raw_texts = {}
+    candidates = []
+    for mode in modes:
+        for scale in region.get("scales", [8]):
+            key = f"{mode}_{scale}x"
+            path = write_ocr_crop(name, width, height, rows, region, mode=mode, scale=scale)
+            text = read_windows_ocr_text(path)
+            raw_texts[key] = text
+            value = parse_compact_number(text)
+            if value is None:
+                continue
+            candidates.append({"value": value, "digits": normalized_digit_count(text), "scale": scale, "mode": mode})
+    return choose_best_number(candidates, minimum=minimum), raw_texts
+
+
+def read_wave_number(width, height, rows):
+    raw_texts = {}
+    for mode in ("raw", "yellow"):
+        for scale in HUD_OCR["wave"].get("scales", [8]):
+            key = f"{mode}_{scale}x"
+            path = write_ocr_crop("wave", width, height, rows, HUD_OCR["wave"], mode=mode, scale=scale)
+            text = read_windows_ocr_text(path)
+            raw_texts[key] = text
+            wave, wave_max = parse_wave_text(text)
+            if wave is not None:
+                return wave, wave_max, raw_texts
+    return None, None, raw_texts
+
+
+def read_hud_state(bounds):
+    width, height, rows = capture_viewport_pixels(bounds)
+    full_path = os.path.join(HUD_DEBUG_DIR, "viewport.png")
+    os.makedirs(HUD_DEBUG_DIR, exist_ok=True)
+    write_png(full_path, width, height, rows)
+
+    wave, wave_max, wave_texts = read_wave_number(width, height, rows)
+    money, money_texts = read_region_number("money", width, height, rows, HUD_OCR["money"], ["raw"], minimum=1)
+
+    unit_costs = {}
+    unit_cost_text = {}
+    for region in HUD_OCR["unit_costs"]:
+        crop_name = normalize_name(region["slot"])
+        cost, texts = read_region_number(crop_name, width, height, rows, region, ["raw", "dim-yellow", "dark"], minimum=1)
+        unit_cost_text[region["slot"]] = texts
+        unit_costs[region["slot"]] = cost
+
+    return {
+        "wave": wave,
+        "wave_max": wave_max,
+        "money": money,
+        "unit_costs": unit_costs,
+        "raw_text": {
+            "wave": wave_texts,
+            "money": money_texts,
+            "unit_costs": unit_cost_text,
+        },
+        "debug_dir": HUD_DEBUG_DIR,
+    }
+
+
+def test_hud_ocr(bounds):
+    log("Reading HUD with Windows OCR...")
+    focus_roblox()
+    state = read_hud_state(bounds)
+    log(f"HUD wave: {state['wave']}/{state['wave_max']} raw={state['raw_text']['wave']!r}")
+    log(f"HUD money: {state['money']} raw={state['raw_text']['money']!r}")
+    for slot, cost in state["unit_costs"].items():
+        raw = state["raw_text"]["unit_costs"][slot]
+        log(f"HUD {slot} cost: {cost} raw={raw!r}")
+    log(f"HUD OCR debug crops: {state['debug_dir']}")
+
+
 def is_namek_track_pixel(color):
     red, green, blue = colorref_to_rgb(color)
     return (
@@ -1010,6 +1629,13 @@ def tap_scan(scan_code):
     sleep(0.08)
     send_scan(scan_code, True)
     sleep(0.18)
+
+
+def tap_scan_fast(scan_code):
+    send_scan(scan_code, False)
+    sleep(0.025)
+    send_scan(scan_code, True)
+    sleep(0.045)
 
 
 def focus_roblox():
@@ -1152,6 +1778,10 @@ def run(
     spawn_test_attempts=100,
     record_movement_enabled=False,
     play_movement_enabled=False,
+    post_route_namek_setup=False,
+    pitch_camera_down_enabled=False,
+    test_unit_placement_enabled=False,
+    test_hud_ocr_enabled=False,
 ):
     mode = canonical_mode(mode)
     act = canonical_act(mode, act)
@@ -1174,6 +1804,19 @@ def run(
 
     if play_movement_enabled:
         play_movement(bounds)
+        return
+
+    if pitch_camera_down_enabled:
+        focus_roblox()
+        pitch_camera_down(bounds)
+        return
+
+    if test_unit_placement_enabled:
+        test_temporary_unit_placement(bounds)
+        return
+
+    if test_hud_ocr_enabled:
+        test_hud_ocr(bounds)
         return
 
     focus_roblox()
@@ -1214,6 +1857,15 @@ def run(
     else:
         select_route(bounds, mode, map_name, act)
 
+    if post_route_namek_setup:
+        click_match_start(bounds)
+        wait_for_match_loaded(bounds)
+        close_match_chat(bounds)
+        click_vote_start(bounds)
+        normalize_planet_namek_camera(bounds, spawn_template_map)
+        play_movement(bounds)
+        restart_match(bounds)
+
 
 def main():
     parser = argparse.ArgumentParser(description="Open the Story area from the Anime Vanguards lobby.")
@@ -1222,8 +1874,8 @@ def main():
     parser.add_argument("--width", type=int, required=True)
     parser.add_argument("--height", type=int, required=True)
     parser.add_argument("--mode", default="story")
-    parser.add_argument("--map", default="Lebereo Raid")
-    parser.add_argument("--act", default="Act 2")
+    parser.add_argument("--map", default="Planet Namak")
+    parser.add_argument("--act", default="Act 1")
     parser.add_argument("--sweep-routes", action="store_true")
     parser.add_argument("--normalize-namek-camera", action="store_true")
     parser.add_argument("--capture-namek-spawn-anchor", action="store_true")
@@ -1232,6 +1884,10 @@ def main():
     parser.add_argument("--spawn-test-attempts", type=int, default=100)
     parser.add_argument("--record-movement", action="store_true")
     parser.add_argument("--play-movement", action="store_true")
+    parser.add_argument("--post-route-namek-setup", action="store_true")
+    parser.add_argument("--pitch-camera-down", action="store_true")
+    parser.add_argument("--test-unit-placement", action="store_true")
+    parser.add_argument("--test-hud-ocr", action="store_true")
     args = parser.parse_args()
 
     run(
@@ -1247,6 +1903,10 @@ def main():
         args.spawn_test_attempts,
         args.record_movement,
         args.play_movement,
+        args.post_route_namek_setup,
+        args.pitch_camera_down,
+        args.test_unit_placement,
+        args.test_hud_ocr,
     )
     print("Started route flow.", flush=True)
 

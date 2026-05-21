@@ -373,28 +373,39 @@ input[type="range"] {
   display: grid;
   justify-items: center;
   transform: translate(-50%, -8px);
-  color: #ff3f3f;
-  font-size: 0.68rem;
-  font-weight: 720;
+  color: #ffefef;
+  font-size: 0.66rem;
+  font-weight: 600;
   line-height: 1;
   text-shadow: 0 1px 1px #000;
 }
 
 .coordinate-marker span {
-  width: 9px;
-  height: 9px;
-  border: 2px solid #ffe1e1;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background: #ff3434;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.65);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .coordinate-marker strong {
-  margin-top: 4px;
+  margin-top: 3px;
   color: #ffefef;
-  font-size: 0.7rem;
-  font-weight: 720;
+  font-size: 0.66rem;
+  font-weight: 600;
   text-shadow: 0 1px 2px #000;
+}
+
+.coordinate-marker.inactive {
+  color: rgba(221, 226, 235, 0.72);
+}
+
+.coordinate-marker.inactive span {
+  background: #9aa2ad;
+}
+
+.coordinate-marker.inactive strong {
+  color: rgba(221, 226, 235, 0.72);
 }
 
 .push-bottom {

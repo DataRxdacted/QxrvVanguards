@@ -2,7 +2,7 @@
   "coordinate": {
     "mode": "default",
     "map": "Planet Namak",
-    "activeSlot": "Slot 1",
+    "activeSlot": "Slot 6",
     "maps": {
       "default:planetnamak": {
         "mode": "default",
@@ -10,8 +10,40 @@
         "slots": {
           "Slot 1": {
             "Unit 1": {
-              "x": 322,
-              "y": 317
+              "x": 353,
+              "y": 312
+            }
+          },
+          "Slot 2": {
+            "Unit 1": {
+              "x": 314,
+              "y": 316
+            }
+          },
+          "Slot 3": {
+            "Unit 1": {
+              "x": 329,
+              "y": 210
+            }
+          },
+          "Slot 5": {
+            "Unit 1": {
+              "x": 523,
+              "y": 264
+            },
+            "Unit 2": {
+              "x": 540,
+              "y": 312
+            },
+            "Unit 3": {
+              "x": 532,
+              "y": 363
+            }
+          },
+          "Slot 6": {
+            "Unit 1": {
+              "x": 301,
+              "y": 420
             }
           }
         }
@@ -35,8 +67,58 @@
       },
       {
         "type": "Place",
-        "slot": "Slot 1",
+        "slot": "Slot 5",
         "unit": "Unit 1",
+        "upgrade": "0",
+        "priority": "None",
+        "wave": 0,
+        "money": 0,
+        "delay": 0
+      },
+      {
+        "type": "Place",
+        "slot": "Slot 5",
+        "unit": "Unit 2",
+        "upgrade": "0",
+        "priority": "None",
+        "wave": 0,
+        "money": 0,
+        "delay": 0
+      },
+      {
+        "type": "Place",
+        "slot": "Slot 5",
+        "unit": "Unit 3",
+        "upgrade": "0",
+        "priority": "None",
+        "wave": 0,
+        "money": 0,
+        "delay": 0
+      },
+      {
+        "type": "Place",
+        "slot": "Slot 2",
+        "unit": "Unit 1",
+        "upgrade": "0",
+        "priority": "None",
+        "wave": 0,
+        "money": 0,
+        "delay": 0
+      },
+      {
+        "type": "Place",
+        "slot": "Slot 5",
+        "unit": "Unit 1",
+        "upgrade": "Max",
+        "priority": "None",
+        "wave": 0,
+        "money": 0,
+        "delay": 0
+      },
+      {
+        "type": "Place",
+        "slot": "Slot 5",
+        "unit": "Unit 2",
         "upgrade": "0",
         "priority": "None",
         "wave": 0,
@@ -49,8 +131,8 @@
     "startOver": false,
     "items": [
       {
-        "id": "7a768145-96cf-4012-ab37-f5a6304a18dc",
-        "priority": 2,
+        "id": "95749b84-3fc9-4978-8657-20e4b83ed62b",
+        "priority": 0,
         "mode": "story",
         "repeat": 0,
         "map": "Planet Namak",
