@@ -1,4 +1,105 @@
 {
+  "mainSettings": {
+    "activeMode": "event",
+    "team": "Team 1",
+    "webhook": false,
+    "modes": {
+      "story": {
+        "nightmare": false
+      },
+      "bounty": {
+        "cooldownCheck": true,
+        "cooldownMinutes": 30
+      },
+      "boss-rush": {
+        "enabled": true
+      },
+      "challenge": {
+        "primary": "Story",
+        "secondary": [
+          "Legend Stage",
+          "Bosses"
+        ]
+      },
+      "legend": {
+        "nightmare": false
+      },
+      "infinite": {
+        "leaveAtWave": 0
+      },
+      "rift": {
+        "card": "Money Surge",
+        "resetTimer": 0
+      },
+      "raid": {
+        "mount": "Mount"
+      },
+      "portal": {
+        "tier": "Highest Available"
+      },
+      "odyssey": {
+        "enabled": true
+      },
+      "dungeon": {
+        "mainModifier": "Fisticuffs",
+        "cards": [
+          {
+            "modifier": "Harvest",
+            "priority": "Highest",
+            "limit": 9999
+          },
+          {
+            "modifier": "Common Loot",
+            "priority": "Lowest",
+            "limit": 9999
+          },
+          {
+            "modifier": "Uncommon Loot",
+            "priority": "First Available",
+            "limit": 9999
+          },
+          {
+            "modifier": "Take It",
+            "priority": "Skip",
+            "limit": 9999
+          },
+          {
+            "modifier": "Damage",
+            "priority": "Skip",
+            "limit": 9999
+          },
+          {
+            "modifier": "Range",
+            "priority": "Skip",
+            "limit": 9999
+          },
+          {
+            "modifier": "Slayer",
+            "priority": "Skip",
+            "limit": 9999
+          },
+          {
+            "modifier": "Champion",
+            "priority": "Skip",
+            "limit": 9999
+          },
+          {
+            "modifier": "Dodge",
+            "priority": "Skip",
+            "limit": 9999
+          },
+          {
+            "modifier": "Speed",
+            "priority": "Skip",
+            "limit": 9999
+          }
+        ]
+      },
+      "event": {
+        "event": "Spring Event"
+      }
+    }
+  },
   "coordinate": {
     "mode": "default",
     "map": "Planet Namak",

@@ -10,7 +10,9 @@ const maximizeButton = document.querySelector("[data-window-maximize]");
 const closeButton = document.querySelector("[data-window-close]");
 const alignRobloxButton = document.querySelector("[data-align-roblox]");
 const startMacroButton = document.querySelector("[data-start-macro]");
+const openMainSettingsButton = document.querySelector("[data-open-main-settings]");
 const openConfigButton = document.querySelector("[data-open-config]");
+const openTasksButton = document.querySelector("[data-open-tasks]");
 const modeSelect = document.querySelector("[data-mode-select]");
 const mapSelect = document.querySelector("[data-map-select]");
 const actSelect = document.querySelector("[data-act-select]");
@@ -371,4 +373,12 @@ startMacroButton?.addEventListener("click", () => {
 
 openConfigButton?.addEventListener("click", () => {
   window.openAVAuto?.config?.open();
+});
+
+openMainSettingsButton?.addEventListener("click", () => {
+  window.openAVAuto?.mainSettings?.open();
+});
+
+openTasksButton?.addEventListener("click", () => {
+  window.openAVAuto?.tasks?.open();
 });

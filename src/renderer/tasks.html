@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OpenAVAuto Tasks</title>
+    <link rel="stylesheet" href="tasks.css" />
+  </head>
+  <body>
+    <canvas class="smoke-background" aria-hidden="true"></canvas>
+    <main class="tasks-shell">
+      <header class="tasks-header">
+        <div>
+          <p class="eyebrow">OpenAVAuto <span data-app-version></span></p>
+          <h1>Tasks</h1>
+        </div>
+        <div class="window-controls" aria-label="Window controls">
+          <button type="button" data-window-minimize aria-label="Minimize">-</button>
+          <button type="button" data-window-maximize aria-label="Maximize">[]</button>
+          <button type="button" data-window-close aria-label="Close">x</button>
+        </div>
+      </header>
+
+      <section class="task-actions">
+        <button class="secondary-button" type="button" data-add-task>Add Task</button>
+        <label class="inline-toggle">
+          <input type="checkbox" data-start-over />
+          Start over
+        </label>
+        <span class="hint">Repeat 0 runs forever. Higher priority numbers interrupt lower ones.</span>
+        <span class="save-state" data-save-state>Saved</span>
+      </section>
+
+      <section class="task-table" aria-label="Task priority list">
+        <div class="task-head">
+          <span>Priority</span>
+          <span>Mode</span>
+          <span>Repeat</span>
+          <span>Map</span>
+          <span>Act</span>
+          <span>Team</span>
+          <span></span>
+        </div>
+        <div class="task-rows" data-task-rows></div>
+      </section>
+
+      <footer class="task-footer">
+        <button class="ghost-button" type="button" data-clear-tasks>Clear</button>
+      </footer>
+    </main>
+
+    <script src="tasks.js"></script>
+  </body>
+</html>

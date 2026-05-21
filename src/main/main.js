@@ -6,6 +6,8 @@ const { app, BrowserWindow, ipcMain, globalShortcut } = require("electron");
 
 let mainWindow;
 let configWindow;
+let mainSettingsWindow;
+let tasksWindow;
 let slotBounds = null;
 let robloxAttached = false;
 let alignInFlight = false;
@@ -284,7 +286,8 @@ const openConfigWindow = () => {
     title: "OpenAVAuto Configs",
     backgroundColor: "#070a10",
     frame: false,
-    parent: mainWindow,
+    minimizable: true,
+    skipTaskbar: false,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
@@ -294,9 +297,74 @@ const openConfigWindow = () => {
   });
 
   configWindow.setMenuBarVisibility(false);
+  configWindow.setAlwaysOnTop(true, "screen-saver");
   configWindow.loadFile(path.join(__dirname, "../renderer/config.html"));
   configWindow.on("closed", () => {
     configWindow = null;
+  });
+};
+
+const openMainSettingsWindow = () => {
+  if (mainSettingsWindow && !mainSettingsWindow.isDestroyed()) {
+    mainSettingsWindow.focus();
+    return;
+  }
+
+  mainSettingsWindow = new BrowserWindow({
+    width: 1180,
+    height: 700,
+    minWidth: 980,
+    minHeight: 620,
+    title: "OpenAVAuto Main Settings",
+    backgroundColor: "#070a10",
+    frame: false,
+    minimizable: true,
+    skipTaskbar: false,
+    webPreferences: {
+      preload: path.join(__dirname, "preload.js"),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: false
+    }
+  });
+
+  mainSettingsWindow.setMenuBarVisibility(false);
+  mainSettingsWindow.setAlwaysOnTop(true, "screen-saver");
+  mainSettingsWindow.loadFile(path.join(__dirname, "../renderer/main-settings.html"));
+  mainSettingsWindow.on("closed", () => {
+    mainSettingsWindow = null;
+  });
+};
+
+const openTasksWindow = () => {
+  if (tasksWindow && !tasksWindow.isDestroyed()) {
+    tasksWindow.focus();
+    return;
+  }
+
+  tasksWindow = new BrowserWindow({
+    width: 980,
+    height: 520,
+    minWidth: 820,
+    minHeight: 430,
+    title: "OpenAVAuto Tasks",
+    backgroundColor: "#070a10",
+    frame: false,
+    minimizable: true,
+    skipTaskbar: false,
+    webPreferences: {
+      preload: path.join(__dirname, "preload.js"),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: false
+    }
+  });
+
+  tasksWindow.setMenuBarVisibility(false);
+  tasksWindow.setAlwaysOnTop(true, "screen-saver");
+  tasksWindow.loadFile(path.join(__dirname, "../renderer/tasks.html"));
+  tasksWindow.on("closed", () => {
+    tasksWindow = null;
   });
 };
 
@@ -334,6 +402,8 @@ app.whenReady().then(() => {
   ipcMain.handle("config:list-map-images", () => getMapImages());
   ipcMain.handle("config:load-user-config", () => readUserConfig());
   ipcMain.handle("config:save-user-config", writeUserConfig);
+  ipcMain.on("main-settings:open", () => openMainSettingsWindow());
+  ipcMain.on("tasks:open", () => openTasksWindow());
   ipcMain.on("config:open", () => openConfigWindow());
   ipcMain.handle("roblox:align", () => attachRobloxWindow());
   ipcMain.handle("macro:start", (_event, options) => runStartMacro(options));

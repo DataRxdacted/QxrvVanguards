@@ -2,6 +2,12 @@ const { contextBridge, ipcRenderer } = require("electron");
 
 contextBridge.exposeInMainWorld("openAVAuto", {
   getVersion: () => ipcRenderer.invoke("app:get-version"),
+  mainSettings: {
+    open: () => ipcRenderer.send("main-settings:open")
+  },
+  tasks: {
+    open: () => ipcRenderer.send("tasks:open")
+  },
   config: {
     open: () => ipcRenderer.send("config:open"),
     listMapImages: () => ipcRenderer.invoke("config:list-map-images"),

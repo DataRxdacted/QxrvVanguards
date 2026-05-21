@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OpenAVAuto Main Settings</title>
+    <link rel="stylesheet" href="main-settings.css" />
+  </head>
+  <body>
+    <canvas class="smoke-background" aria-hidden="true"></canvas>
+    <main class="settings-shell">
+      <header class="settings-header">
+        <div>
+          <p class="eyebrow">OpenAVAuto <span data-app-version></span></p>
+          <h1>Main Settings</h1>
+        </div>
+        <div class="window-controls" aria-label="Window controls">
+          <button type="button" data-window-minimize aria-label="Minimize">-</button>
+          <button type="button" data-window-maximize aria-label="Maximize">[]</button>
+          <button type="button" data-window-close aria-label="Close">x</button>
+        </div>
+      </header>
+
+      <section class="settings-toolbar">
+        <label>
+          Mode
+          <select data-main-mode></select>
+        </label>
+        <label>
+          Strategy Team
+          <select data-main-field="team">
+            <option>Team 1</option>
+            <option>Team 2</option>
+            <option>Team 3</option>
+            <option>Team 4</option>
+            <option>Team 5</option>
+            <option>Team 6</option>
+          </select>
+        </label>
+        <label class="inline-toggle webhook-toggle">
+          <input type="checkbox" data-main-field="webhook" />
+          Webhook
+        </label>
+        <span class="save-state" data-save-state>Saved</span>
+      </section>
+
+      <section class="settings-layout">
+        <aside class="mode-list" aria-label="Main settings modes" data-mode-list></aside>
+        <section class="settings-panel" data-mode-panel></section>
+      </section>
+    </main>
+
+    <script src="main-settings.js"></script>
+  </body>
+</html>
